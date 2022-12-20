@@ -7,6 +7,8 @@ class _Checks:
         self.typehint, self.checks = self._parse(checks)
         return self
 
+    def enforce(self, fct, ):
+
     @staticmethod
     def _parse(checks):
         # Checks is never empty because this eventuality
