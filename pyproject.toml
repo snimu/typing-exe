@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parameter-checks"
+version = "0.0.1"
+authors = [{name="Sebastian Müller"}, {email="sebastian.nicolas.mueller@gmail.com"}]
+description = "Add checks to parameters (and return values) to functions. "
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["parameters", "checks", "types", "dynamic"]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.license]
+file = "LICENCE"
+
+
+[project.urls]
+repository = "https://github.com/snimu/parameter-checks"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["parameter_checks*"]
+exclude = ["venv", "tests", ".*", "*.md"]
