@@ -23,9 +23,14 @@ Extend typehints to include dynamic checks (that might otherwise be dealt with b
 pip3 install parameter_checks
 ```
 
-## Design
+**Comment**
 
-Should work something like this:
+- A proper documentation is (likely) coming
+- A conda-build may or may not come
+
+## Example: Checks
+
+Works something like this:
 
 ```python
 import parameter_checks as pc
@@ -38,8 +43,8 @@ class Status(enum.Enum):
   DISPLAYED = 2
 
 
-@pc.enforce.cleanup  # Cleans up annotations
-@pc.enforce.enforce  # Enforces the checks
+@pc.hints.cleanup  # Cleans up annotations
+@pc.hints.enforce  # Enforces the checks
 def function(
         rescale: pc.annotations.Checks[
           float,
@@ -55,17 +60,127 @@ def function(
   ...
 ```
 
-### Rules
+As can be seen in this example, this package provides a new type-annotation: [pc.annotations.Checks](#pcannotationschecks)
+(it also provides [pc.annotations.Hooks](#pcannotationshooks), as seen in the example below). 
 
-- The first entry in `Checks` can either be a type or a callable. All others have to be callables. 
-- Not all annotations have to be `Checks`. If it is a type-annotation, it will be enforced.
-  - Always allow None, obviously. 
-- `@pc.annotations.cleanup` is independent of `@pc.enforce.checks` so that other decorators may be able to work with 
-the full annotation-data in the future. 
+### pc.annotations.Checks
+
+**Construction**
+
+As seen in the [example](#example--checks), `pc.annotations.Checks` is constructed via its 
+`__getitem__`-method to conform to the type-hinting from [typing](https://docs.python.org/3/library/typing.html).
+
+The first parameter in the brackets can either be a type-hint or a callable. All others must be callables, or they will 
+be ignored by [@pc.hints.enforce](#pchintsenforce) and [@pc.hints.cleanup](#pchintscleanup). Any callable is assumed 
+to take one argument&mdash;the parameter&mdash;and return a `bool`. 
+If that bool is `False`, a `ValueError` will be raised. These callables will be referred to as "check functions" 
+from hereon out.
+
+**Explanation with examples**
+
+Using this annotation on a parameter- or return-hint of a callable that is decorated with 
+[@pc.hints.enforce](#pchintsenforce) means that the check-functions in the `Checks`-hint 
+will be executed and, if they fail, will raise a ValueError 
+with that looks something like this:
+
+    ValueError: Check failed! 
+        - function: foo
+        - parameter: a
+
+For the following function:
+
+```python
+import parameter_checks as pc
 
 
-### Plan
+@pc.hints.enforce
+def foo(a: pc.annotations.Checks[lambda a: a != 0]):
+    ... 
 
-- At first, only implement the checks (because it is much easier).
-- Types in `Checks` are only there for `@pc.enforce.cleanup` to work.
 
+foo(0)   # raises ValueError
+```
+
+The error-output will be improved upon with more information to make the traceback easier.
+
+
+### pc.annotations.Hooks
+
+This works similar to [pc.annotations.Checks](#pcannotationschecks), except that its check-functions work differently.
+
+The first item in the brackets can again be a type or a callable, but the callables are now assumed to work 
+differently: 
+
+- They take four arguments in the following order: 
+  1. **fct**: the function that was decorated by [@pc.hints.enforce](#pchintsenforce).
+  2. **parameter**: the value of the parameter that is annotated.
+  3. **parameter_name**: the name of that parameter.
+  4. **typehint**: the typehint.
+- They return the parameter &ndash; however modified. 
+
+**Example**
+
+```python
+import parameter_checks as pc
+
+
+def hook_function(fct, parameter, parameter_name, typehint):
+    if type(parameter) is not typehint.typehint:
+        err_str = f"In function {fct}, parameter {parameter_name}={parameter} " \
+                  f"is not of type {typehint.typehint}!"
+        raise TypeError(err_str)
+    
+    # Yes, the following calculation should be in the function-body,
+    #   but it demonstrates that arbitrary changes can be made here,
+    #   which might be useful if, for example, some conversion has 
+    #   to happen in many parameters of many functions. 
+    # Moving that conversion into its own function and calling it 
+    #   in the typehint might make the program more readable than 
+    #   packing it into the function-body.
+    return 3 + 4 * parameter - parameter**2   
+
+
+@pc.hints.enforce
+def foo(a: pc.annotations.Hooks[int, hook_function]):
+    return a 
+```
+
+You can also use multiple hook-functions, which will be called on each other's output in the order
+in which they are given to `pc.annotations.Hooks`.
+
+### @pc.hints.enforce
+
+This decorator enforces the two above-mentioned hints ([pc.annotations.Checks](#pcannotationschecks) 
+and [pc.annotations.Hooks](#pcannotationshooks)) for a callable. 
+
+**CAREFUL** This decorator *doesn't* enforce type-hints, but only the check-functions. Type-hints 
+are only there for [@pc.hints.cleanup](#pchintscleanup).
+
+### @pc.hints.cleanup
+
+This decorator removes any hint of `pc.annotations.Checks` (and `pc.annotations.Hooks`, as described below). This means that a 
+function annotated as follows:
+
+```python 
+import parameter_checks as pc 
+
+
+@pc.hints.cleanup
+@pc.hints.enforce
+def foo(
+        a: int, 
+        b: pc.annotations.Checks[int, ...], 
+        c
+) -> pc.annotations.Checks[...]:
+    ...
+```
+
+which is excpected to have the following `__annotations__`: 
+
+`{'a': int, 'b': pc.annotations.Checks[int, ...], 'return': pc.annotations.Checks[...]`
+
+now actually has these annotations:
+
+`{'a': int, 'b': int}`
+
+This way, other decorators can work as usual. This is important as `@pc.hints.enforce` doesn't enforce 
