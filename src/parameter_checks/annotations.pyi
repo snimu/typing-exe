@@ -8,9 +8,6 @@ class _Checks:
 
     def __getitem__(self, checks): ...
 
-    @staticmethod
-    def _parse(checks): ...
-
     def enforce(self): ...
 
 
@@ -22,9 +19,6 @@ class _Hooks:
     def __getitem__(self, item): ...
 
     def enforce(self, fct, parameter, parameter_name): ...
-
-    @staticmethod
-    def _parse(hooks): ...
 
 
 class _HintsCreator:
