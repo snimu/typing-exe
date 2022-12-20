@@ -1,6 +1,6 @@
 # parameter-checks
 
-Add checks to parameters (and return values) to functions. 
+Extend typehints to include dynamic checks (that might otherwise be dealt with by assertions) in Python.
 
 **Project**
 
@@ -14,7 +14,7 @@ Add checks to parameters (and return values) to functions.
 
 **Misc**
 
-![License](https://img.shields.io/github/license/snimu/parameter_checks)
+![License](https://img.shields.io/github/license/snimu/parameter-checks)
 ![Python Versions](https://img.shields.io/pypi/pyversions/parameter_checks)
 
 **Installation: Pip**
