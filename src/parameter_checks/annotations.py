@@ -1,4 +1,31 @@
-class _Checks:
+from typing import Union, Type
+
+
+class _Parser:
+    @staticmethod
+    def _parse(inputs):
+        # Checks is never empty because this eventuality
+        #   is caught by _ChecksCreator
+        if not isinstance(inputs, tuple):
+            inputs = (inputs,)
+        if len(inputs) == 1 and type(inputs[0]) is type:
+            return inputs[0], None
+        if len(inputs) == 1 and callable(inputs[0]):
+            return None, inputs
+        if len(inputs) > 1:
+            typehint = None
+            if type(inputs[0]) is type:
+                typehint = inputs[0]
+                inputs = inputs[1:]
+
+            inputs = [input for input in inputs if callable(input)]
+            inputs = None if not inputs else inputs
+            return typehint, inputs
+
+        return None, None  # in case of complete nonsense
+
+
+class _Checks(_Parser):
     def __init__(self):
         self.typehint = None
         self.checks = None
@@ -18,70 +45,34 @@ class _Checks:
                           f"\t- parameter: {parameter_name}"
                 raise ValueError(err_str)
 
-    @staticmethod
-    def _parse(checks):
-        # Checks is never empty because this eventuality
-        #   is caught by _ChecksCreator
-        if not isinstance(checks, tuple):
-            checks = (checks, )
-        if len(checks) == 1 and type(checks[0]) is type:
-            return checks[0], None
-        if len(checks) == 1 and callable(checks[0]):
-            return None, checks
-        if len(checks) > 1:
-            typehint = None
-            if type(checks[0]) is type:
-                typehint = checks[0]
-                checks = checks[1:]
 
-            checks = [check for check in checks if callable(check)]
-            checks = None if not checks else checks
-            return typehint, checks
-
-        return None, None   # in case of complete nonsense
-
-
-class _Hook:
+class _Hooks(_Parser):
     def __init__(self):
+        self.typehint = None
         self.hooks = None
 
     def __getitem__(self, hooks):
-        self.hooks = self._parse(hooks)
+        self.typehint, self.hooks = self._parse(hooks)
         return self
 
     def enforce(self, fct, parameter, parameter_name):
         pass
 
-    @staticmethod
-    def _parse(hooks):
-        # hooks is never empty because this eventuality
-        #   is caught by _HooksCreator
-        return hooks
 
-
-class _ChecksCreator:
-    def __init__(self):
+class _HintsCreator:
+    def __init__(self, _class: Union[Type[_Checks], Type[_Hooks]]):
+        self._class = _class
         self.typehint = None
         self.checks = None
 
-    def __getitem__(self, item) -> _Checks:
-        return _Checks()[item]
+    def __getitem__(self, item) -> Union[_Checks, _Hooks]:
+        return self._class()[item]
 
 
-class _HooksCreator:
-    def __init__(self):
-        self.check = None
-        self.hook = None
-        self.description = None
-
-    def __getitem__(self, item) -> _Hook:
-        return _Hook()[item]
-
-
-Checks = _ChecksCreator()
+Checks = _HintsCreator(_Checks)
 Checks.__doc__ = \
     """TODO"""
 
-Hooks = _HooksCreator()
+Hooks = _HintsCreator(_Hooks)
 Hooks.__doc__ = \
     """TODO"""

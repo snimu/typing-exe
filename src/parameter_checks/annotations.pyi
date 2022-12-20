@@ -1,3 +1,6 @@
+from typing import Union, Type
+
+
 class _Checks:
     def __init__(self):
         self.checks = None
@@ -11,16 +14,9 @@ class _Checks:
     def enforce(self): ...
 
 
-class _ChecksCreator:
+class _Hooks:
     def __init__(self):
-        self.checks = None
         self.typehint = None
-
-    def __getitem__(self, item) -> _Checks: ...
-
-
-class _Hook:
-    def __init__(self):
         self.hooks = None
 
     def __getitem__(self, item): ...
@@ -31,11 +27,14 @@ class _Hook:
     def _parse(hooks): ...
 
 
-class _HooksCreator:
-    def __init__(self): ...
+class _HintsCreator:
+    def __init__(self, _class: Union[Type[_Checks], Type[_Hooks]]):
+        self._class = _class
+        self.checks = None
+        self.typehint = None
 
-    def __getitem__(self, item) -> _Hook: ...
+    def __getitem__(self, item) -> Union[_Checks, _Hooks]: ...
 
 
-Checks: _ChecksCreator
-Hooks: _HooksCreator
+Checks: _HintsCreator
+Hooks: _HintsCreator
