@@ -23,14 +23,14 @@ Extend typehints to include dynamic checks (that might otherwise be dealt with b
 pip3 install parameter_checks
 ```
 
-**Comment**
+**Comments**
 
 - A proper documentation is (likely) coming
 - A conda-build may or may not come
 
-## Example: Checks
+## Package
 
-Works something like this:
+Basic example:
 
 ```python
 import parameter_checks as pc
@@ -62,6 +62,8 @@ def function(
 
 As can be seen in this example, this package provides a new type-annotation: [pc.annotations.Checks](#pcannotationschecks)
 (it also provides [pc.annotations.Hooks](#pcannotationshooks), as seen in the example below). 
+Using [@pc.hints.enforce](#pchintsenforce) on a function will enforce the checks given to those 
+annotations (but not the types).
 
 ### pc.annotations.Checks
 
@@ -103,6 +105,10 @@ foo(0)   # raises ValueError
 
 The error-output will be improved upon with more information to make the traceback easier.
 
+**CAREFUL** Do not use this hint in any other hint (like `pc.annotations.Checks | float`, 
+or `tuple[pc.annotations.Check, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
+and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations.Checks`. 
+
 
 ### pc.annotations.Hooks
 
@@ -125,9 +131,9 @@ import parameter_checks as pc
 
 
 def hook_function(fct, parameter, parameter_name, typehint):
-    if type(parameter) is not typehint.typehint:
+    if type(parameter) is not typehint:
         err_str = f"In function {fct}, parameter {parameter_name}={parameter} " \
-                  f"is not of type {typehint.typehint}!"
+                  f"is not of type {typehint}!"
         raise TypeError(err_str)
     
     # Yes, the following calculation should be in the function-body,
@@ -143,10 +149,19 @@ def hook_function(fct, parameter, parameter_name, typehint):
 @pc.hints.enforce
 def foo(a: pc.annotations.Hooks[int, hook_function]):
     return a 
+
+
+assert foo(1) == 6
+assert foo(2) == 7
+assert foo(5) == -2
 ```
 
 You can also use multiple hook-functions, which will be called on each other's output in the order
 in which they are given to `pc.annotations.Hooks`.
+
+**CAREFUL** Do not use this hint in any other hint (like `pc.annotations.Hooks | float`, 
+or `tuple[pc.annotations.Hooks, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
+and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations.Hooks`.
 
 ### @pc.hints.enforce
 
@@ -183,4 +198,14 @@ now actually has these annotations:
 
 `{'a': int, 'b': int}`
 
-This way, other decorators can work as usual. This is important as `@pc.hints.enforce` doesn't enforce 
+This way, other decorators can work as usual. 
+
+This decorator is separate from 
+[@pc.hints.enforce](#pchintsenforce) so that users can decide to somehow make use
+of [pc.annotations.Checks](#pcannotationschecks) and [pc.annotations.Hooks](#pcannotationshooks)
+in their own functions or decorators, or choose to remove those pesky annotations and have 
+normal-looking `__annotations__`.
+
+## But why?
+
+
