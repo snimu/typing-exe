@@ -7,7 +7,8 @@ class TestChecks:
         def check_fct(a):
             return a < 1
         checks = pc.annotations.Checks[int, check_fct]
-        assert checks.checks == (int, check_fct)
+        assert checks.checks == [check_fct]
+        assert checks.typehint is int
 
 
 class TestHook:

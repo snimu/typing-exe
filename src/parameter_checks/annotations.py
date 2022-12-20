@@ -1,11 +1,24 @@
 class _Checks:
     def __getitem__(self, checks):
-        self.checks = self._cleanup(checks)
+        self.typehint, self.checks = self._cleanup(checks)
         return self
 
     @staticmethod
     def _cleanup(checks):
-        return checks
+        if len(checks) == 0:
+            return None, None
+        if len(checks) == 1 and type(checks[0]) is type:
+            return checks[0], None
+        if len(checks) == 1 and callable(checks[0]):
+            return None, checks
+        if len(checks) > 1:
+            typehint = None
+            if type(checks[0]) is type:
+                typehint = checks[0]
+                checks = checks[1:]
+
+            checks = [check for check in checks if callable(check)]
+            return typehint, checks
 
 
 class _Hook:
