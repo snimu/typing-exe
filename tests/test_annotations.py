@@ -37,13 +37,7 @@ class TestChecks:
 
 class TestHook:
     def test_construction(self):
-        def check_fct(a):
-            return a < 1
+        hooks = pc.annotations.Hooks[lambda x: x**2, lambda x: x - 2]
 
-        def hook_fct(a):
-            return a
-
-        hook = pc.annotations.Hook[check_fct, hook_fct, "Not a real Hook"]
-        assert hook.check is check_fct
-        assert hook.hook is hook_fct
-        assert hook.description == "Not a real Hook"
+        assert hooks.hooks[0](2) == 4
+        assert hooks.hooks[1](2) == 0

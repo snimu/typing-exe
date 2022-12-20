@@ -21,18 +21,21 @@ class _ChecksCreator:
 
 class _Hook:
     def __init__(self):
-        self.check = None
-        self.hook = None
-        self.description = None
+        self.hooks = None
 
     def __getitem__(self, item): ...
 
+    def enforce(self, fct, parameter, parameter_name): ...
 
-class _HookCreator:
+    @staticmethod
+    def _parse(hooks): ...
+
+
+class _HooksCreator:
     def __init__(self): ...
 
     def __getitem__(self, item) -> _Hook: ...
 
 
 Checks: _ChecksCreator
-Hook: _HookCreator
+Hooks: _HooksCreator

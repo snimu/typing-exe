@@ -43,15 +43,20 @@ class _Checks:
 
 class _Hook:
     def __init__(self):
-        self.check = None
-        self.hook = None
-        self.description = None
+        self.hooks = None
 
-    def __getitem__(self, checks):
-        self.check = checks[0]
-        self.hook = checks[1]
-        self.description = checks[2] if len(checks) == 3 else None
+    def __getitem__(self, hooks):
+        self.hooks = self._parse(hooks)
         return self
+
+    def enforce(self, fct, parameter, parameter_name):
+        pass
+
+    @staticmethod
+    def _parse(hooks):
+        # hooks is never empty because this eventuality
+        #   is caught by _HooksCreator
+        return hooks
 
 
 class _ChecksCreator:
@@ -63,7 +68,7 @@ class _ChecksCreator:
         return _Checks()[item]
 
 
-class _HookCreator:
+class _HooksCreator:
     def __init__(self):
         self.check = None
         self.hook = None
@@ -77,6 +82,6 @@ Checks = _ChecksCreator()
 Checks.__doc__ = \
     """TODO"""
 
-Hook = _HookCreator()
-Hook.__doc__ = \
+Hooks = _HooksCreator()
+Hooks.__doc__ = \
     """TODO"""
