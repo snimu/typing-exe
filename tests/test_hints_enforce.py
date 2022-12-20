@@ -43,6 +43,16 @@ class TestChecks:
         with pytest.raises(ValueError):
             fct(0)
 
+    def test_return(self):
+        @pc.hints.enforce
+        def faulty_abs(a: int) -> pc.annotations.Checks[lambda r: r >= 0]:
+            return a
+
+        assert faulty_abs(1) == 1
+
+        with pytest.raises(ValueError):
+            faulty_abs(-1)
+
 
 class TestHooks:
     def test_basic(self):
@@ -52,7 +62,7 @@ class TestHooks:
             return (parameter + 1)**2
 
         @pc.hints.enforce
-        def fct(a: pc.annotations.Hooks[int, hookfct]):
+        def fct(a: pc.annotations.Hooks[int, hookfct]) -> int:
             return a
 
         assert fct(1) == 4
@@ -60,3 +70,14 @@ class TestHooks:
 
         with pytest.raises(ValueError):
             fct(0)
+
+    def test_returns(self):
+        def hookfct(fct, parameter, parameter_name, typehint):
+            return abs(parameter)
+
+        @pc.hints.enforce
+        def abs_fct(a: int) -> pc.annotations.Hooks[hookfct]:
+            return a
+
+        assert abs_fct(1) == 1
+        assert abs_fct(-1) == 1

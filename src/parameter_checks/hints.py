@@ -46,6 +46,12 @@ def _check_kwargs(fct, kwargs, annotations):
 
 
 def _check_returns(fct, returns, annotations):
+    if isinstance(annotations.get("return"), pc.annotations._Checks):
+        checks = annotations.get("return")
+        checks.enforce(fct, returns, "return")
+    elif isinstance(annotations.get("return"), pc.annotations._Hooks):
+        hooks = annotations.get("return")
+        returns = hooks.enforce(fct, returns, "return")
     return returns
 
 
