@@ -56,7 +56,11 @@ class _Hooks(_Parser):
         return self
 
     def enforce(self, fct, parameter, parameter_name):
-        pass
+        if self.hooks is not None:
+            for hook in self.hooks:
+                parameter = hook(fct, parameter, parameter_name, self.typehint)
+
+        return parameter
 
 
 class _HintsCreator:
