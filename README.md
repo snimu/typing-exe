@@ -2,10 +2,26 @@
 
 Add checks to parameters (and return values) to functions. 
 
+**Project**
+
+![PyPI Version](https://img.shields.io/pypi/v/parameter_checks)
+![Wheel](https://img.shields.io/pypi/wheel/parameter_checks)
+
+**Tests**
 
 ![Tests](https://github.com/snimu/parameter-checks/actions/workflows/tests.yml/badge.svg)
 ![Coverage](coverage.svg)
 
+**Misc**
+
+![License](https://img.shields.io/github/license/snimu/parameter_checks)
+![Python Versions](https://img.shields.io/pypi/pyversions/parameter_checks)
+
+**Installation: Pip**
+
+```bash
+pip3 install parameter_checks
+```
 
 ## Design
 
