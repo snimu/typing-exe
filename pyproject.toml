@@ -32,3 +32,12 @@ repository = "https://github.com/snimu/parameter-checks"
 where = ["src"]
 include = ["parameter_checks*"]
 exclude = ["venv", "tests", ".*", "*.md"]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=parameter_checks"
+testpaths = [
+    "tests",
+]

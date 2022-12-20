@@ -59,9 +59,3 @@ Checks.__doc__ = \
 Hook = _ItemCreator(_Hook)
 Hook.__doc__ = \
     """TODO"""
-
-
-a = Checks[1, 2, 3]
-b = Checks[4, 5, 6]
-
-print(a.checks, b.checks)
