@@ -4,6 +4,7 @@ Add checks to parameters (and return values) to functions.
 
 
 ![Tests](https://github.com/snimu/parameter-checks/actions/workflows/tests.yml/badge.svg)
+![Coverage](coverage.svg)
 
 
 ## Design
