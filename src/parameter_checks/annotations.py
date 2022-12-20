@@ -7,6 +7,17 @@ class _Checks:
         self.typehint, self.checks = self._parse(checks)
         return self
 
+    def enforce(self, fct, parameter, parameter_name):
+        if self.checks is None or parameter is None:
+            return
+
+        for check in self.checks:
+            if not check(parameter):
+                err_str = f"Check failed! \n" \
+                          f"\t- function: {fct.__qualname__}\n" \
+                          f"\t- parameter: {parameter_name}"
+                raise ValueError(err_str)
+
     @staticmethod
     def _parse(checks):
         # Checks is never empty because this eventuality
@@ -48,7 +59,7 @@ class _ChecksCreator:
         self.typehint = None
         self.checks = None
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> _Checks:
         return _Checks()[item]
 
 
@@ -58,7 +69,7 @@ class _HookCreator:
         self.hook = None
         self.description = None
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> _Hook:
         return _Hook()[item]
 
 
