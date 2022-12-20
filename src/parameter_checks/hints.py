@@ -3,7 +3,7 @@ from functools import wraps
 import parameter_checks as pc
 
 
-def checks(fct):
+def enforce(fct):
     annotations = copy.deepcopy(fct.__annotations__)
 
     @wraps(fct)

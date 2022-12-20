@@ -3,7 +3,7 @@ import parameter_checks as pc
 
 
 def test_basic():
-    @pc.enforce.checks
+    @pc.hints.enforce
     def fct(a: pc.annotations.Checks[int, lambda a: a < 5]):
         return a
 
@@ -14,7 +14,7 @@ def test_basic():
 
 
 def test_multiple():
-    @pc.enforce.checks
+    @pc.hints.enforce
     def fct(
             a: pc.annotations.Checks[lambda a: a != 0, lambda a: a%3 == 0],
             b: int,

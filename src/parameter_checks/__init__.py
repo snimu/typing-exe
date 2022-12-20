@@ -1,2 +1,2 @@
-import parameter_checks.enforce
+import parameter_checks.hints
 import parameter_checks.annotations

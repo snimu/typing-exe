@@ -11,31 +11,31 @@ Add checks to parameters (and return values) to functions.
 Should work something like this:
 
 ```python
-import parameter_checks as pc 
+import parameter_checks as pc
 import enum
 
 
 class Status(enum.Enum):
-    FAILURE=0
-    SAVED=1
-    DISPLAYED=2
+  FAILURE = 0
+  SAVED = 1
+  DISPLAYED = 2
 
 
-@pc.enforce.cleanup   # Cleans up annotations
-@pc.enforce.checks   # Enforces the checks
+@pc.enforce.cleanup  # Cleans up annotations
+@pc.enforce.enforce  # Enforces the checks
 def function(
         rescale: pc.annotations.Checks[
-            float,
-            lambda a: 1. < a < 25.
+          float,
+          lambda a: 1. < a < 25.
         ],
         file: pc.annotations.Checks[
-            str,
-            lambda file: file.endswith(".jpg") or file.endswith(".png"),
-            lambda file: not file.endswith("private.jpg") and not file.endswith("private.jpg"),
-            lambda file: not file.startswith("_")
+          str,
+          lambda file: file.endswith(".jpg") or file.endswith(".png"),
+          lambda file: not file.endswith("private.jpg") and not file.endswith("private.jpg"),
+          lambda file: not file.startswith("_")
         ]
 ) -> pc.annotations.Checks[Status, lambda r: r != Status.FAILURE]:
-    ...
+  ...
 ```
 
 ### Rules
