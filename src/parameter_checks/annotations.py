@@ -2,46 +2,45 @@ from typing import Union, Type
 import typing
 
 
-class _Parser:
-    def _parse(self, values):
-        # Checks is never empty because this eventuality
-        #   is caught by _ChecksCreator
-        if not isinstance(values, tuple):
-            values = (values,)
-        if len(values) == 1 and self._is_typehint(values[0]):
-            return values[0], None
-        if len(values) == 1 and callable(values[0]):
-            return None, values
-        if len(values) > 1:
-            typehint = None
-            if self._is_typehint(values[0]):
-                typehint = values[0]
-                values = values[1:]
+def is_typehint(value) -> bool:
+    if type(value) is type:
+        return True
 
-            values = [value for value in values if callable(value)]
-            values = None if not values else values
-            return typehint, values
-
-        return None, None  # in case of complete nonsense
-
-    @staticmethod
-    def _is_typehint(value):
-        if type(value) is type:
-            return True
-
-        # Can also be from typing module
-        name_with_brackets = str(value).split(".")[-1]   # Might be Union or Union[float, int]
-        name = name_with_brackets.split("[")[0]   # Now just Union (etc.)
-        return name in typing.__all__
+    # Can also be from typing module
+    name_with_brackets = str(value).split(".")[-1]  # Might be Union or Union[float, int]
+    name = name_with_brackets.split("[")[0]  # Now just Union (etc.)
+    return name in typing.__all__
 
 
-class _Checks(_Parser):
+def parse(values):
+    # Checks is never empty because this eventuality
+    #   is caught by _ChecksCreator
+    if not isinstance(values, tuple):
+        values = (values,)
+    if len(values) == 1 and is_typehint(values[0]):
+        return values[0], None
+    if len(values) == 1 and callable(values[0]):
+        return None, values
+    if len(values) > 1:
+        typehint = None
+        if is_typehint(values[0]):
+            typehint = values[0]
+            values = values[1:]
+
+        values = [value for value in values if callable(value)]
+        values = None if not values else values
+        return typehint, values
+
+    return None, None  # in case of complete nonsense
+
+
+class _Checks:
     def __init__(self):
         self.typehint = None
         self.checks = None
 
     def __getitem__(self, checks):
-        self.typehint, self.checks = self._parse(checks)
+        self.typehint, self.checks = parse(checks)
         return self
 
     def enforce(self, fct, parameter, parameter_name):
@@ -56,13 +55,13 @@ class _Checks(_Parser):
                 raise ValueError(err_str)
 
 
-class _Hooks(_Parser):
+class _Hooks:
     def __init__(self):
         self.typehint = None
         self.hooks = None
 
     def __getitem__(self, hooks):
-        self.typehint, self.hooks = self._parse(hooks)
+        self.typehint, self.hooks = parse(hooks)
         return self
 
     def enforce(self, fct, parameter, parameter_name):

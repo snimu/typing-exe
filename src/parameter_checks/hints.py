@@ -56,4 +56,16 @@ def _check_returns(fct, returns, annotations):
 
 
 def cleanup(fct):
-    pass
+    new_annotations = {}
+
+    for parameter, typehint in fct.__annotations__.items():
+        if typehint is None:
+            continue
+        if pc.annotations.is_typehint(typehint):
+            new_annotations[parameter] = typehint
+        elif (isinstance(typehint, pc.annotations._Checks) or isinstance(typehint, pc.annotations._Hooks)) \
+                and typehint.typehint is not None:
+            new_annotations[parameter] = typehint.typehint
+
+    fct.__annotations__ = new_annotations
+    return fct

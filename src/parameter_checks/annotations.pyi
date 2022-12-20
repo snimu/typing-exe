@@ -1,6 +1,9 @@
 from typing import Union, Type
 
 
+def is_typehint(value) -> bool: ...
+
+
 class _Checks:
     def __init__(self):
         self.checks = None
