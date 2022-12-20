@@ -10,7 +10,8 @@ def enforce(fct):
     def _run(*args, **kwargs):
         args = _check_args(fct, args, annotations)
         kwargs = _check_kwargs(fct, kwargs, annotations)
-        return fct(*args, **kwargs)
+        returns = fct(*args, **kwargs)
+        return _check_returns(fct, returns, annotations)
 
     return _run
 
@@ -42,6 +43,10 @@ def _check_kwargs(fct, kwargs, annotations):
             new_kwargs[pname] = pvalue
 
     return new_kwargs
+
+
+def _check_returns(fct, returns, annotations):
+    return returns
 
 
 def cleanup(fct):

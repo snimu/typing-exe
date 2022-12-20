@@ -1,28 +1,38 @@
 from typing import Union, Type
+import typing
 
 
 class _Parser:
-    @staticmethod
-    def _parse(inputs):
+    def _parse(self, values):
         # Checks is never empty because this eventuality
         #   is caught by _ChecksCreator
-        if not isinstance(inputs, tuple):
-            inputs = (inputs,)
-        if len(inputs) == 1 and type(inputs[0]) is type:
-            return inputs[0], None
-        if len(inputs) == 1 and callable(inputs[0]):
-            return None, inputs
-        if len(inputs) > 1:
+        if not isinstance(values, tuple):
+            values = (values,)
+        if len(values) == 1 and self._is_typehint(values[0]):
+            return values[0], None
+        if len(values) == 1 and callable(values[0]):
+            return None, values
+        if len(values) > 1:
             typehint = None
-            if type(inputs[0]) is type:
-                typehint = inputs[0]
-                inputs = inputs[1:]
+            if self._is_typehint(values[0]):
+                typehint = values[0]
+                values = values[1:]
 
-            inputs = [input for input in inputs if callable(input)]
-            inputs = None if not inputs else inputs
-            return typehint, inputs
+            values = [value for value in values if callable(value)]
+            values = None if not values else values
+            return typehint, values
 
         return None, None  # in case of complete nonsense
+
+    @staticmethod
+    def _is_typehint(value):
+        if type(value) is type:
+            return True
+
+        # Can also be from typing module
+        name_with_brackets = str(value).split(".")[-1]   # Might be Union or Union[float, int]
+        name = name_with_brackets.split("[")[0]   # Now just Union (etc.)
+        return name in typing.__all__
 
 
 class _Checks(_Parser):

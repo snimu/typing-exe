@@ -1,5 +1,6 @@
 import pytest
 import parameter_checks as pc
+from typing import Union
 
 
 class TestChecks:
@@ -12,7 +13,6 @@ class TestChecks:
 
         with pytest.raises(ValueError):
             fct(5)
-
 
     def test_multiple(self):
         @pc.hints.enforce
@@ -32,6 +32,16 @@ class TestChecks:
 
         with pytest.raises(ValueError):
             fct(1, 1, 1, 1)
+
+    def test_typing(self):
+        @pc.hints.enforce
+        def fct(a: pc.annotations.Checks[Union[int, float], lambda a: a != 0]):
+            return a
+
+        assert fct(1) == 1
+
+        with pytest.raises(ValueError):
+            fct(0)
 
 
 class TestHooks:
