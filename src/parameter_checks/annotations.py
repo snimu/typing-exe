@@ -1,4 +1,8 @@
 class _Checks:
+    def __init__(self):
+        self.typehint = None
+        self.checks = None
+
     def __getitem__(self, checks):
         self.typehint, self.checks = self._parse(checks)
         return self
@@ -27,6 +31,11 @@ class _Checks:
 
 
 class _Hook:
+    def __init__(self):
+        self.check = None
+        self.hook = None
+        self.description = None
+
     def __getitem__(self, checks):
         self.check = checks[0]
         self.hook = checks[1]
