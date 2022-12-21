@@ -27,8 +27,8 @@ def parse(values):
             typehint = values[0]
             values = values[1:]
 
-        values = [value for value in values if callable(value)]
-        values = None if not values else values
+        values = [value for value in values if callable(value) and not is_typehint(value)]
+        values = None if not values else values   # Assume None or has entries in .enforce
         return typehint, values
 
     return None, None  # in case of complete nonsense

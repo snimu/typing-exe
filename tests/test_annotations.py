@@ -1,4 +1,4 @@
-import pytest
+import typing
 import parameter_checks as pc
 
 
@@ -33,6 +33,18 @@ class TestChecks:
         checks = pc.annotations.Checks
         assert checks.checks is None
         assert checks.typehint is None
+
+    def test_construction_multiple_typehints_in_checks(self):
+        def check_fct(a):
+            return a != 0
+
+        checks = pc.annotations.Checks[
+            int, typing.Union[int, float], typing.Tuple[int, int],
+            check_fct
+        ]
+
+        assert checks.typehint is int
+        assert checks.checks == [check_fct]
 
 
 class TestHook:
