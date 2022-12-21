@@ -317,3 +317,83 @@ might assist readability of code, as well)
 - Make code easier to write by providing important information about APIs in a glancable way
   - This would of course require editor-support, which I do not provide
 - Make it possible to include information on dynamic constraints in automatically generated documentation
+
+
+# Ideas for future extensions
+
+There is still a lot that this package cannot do, and here are some ideas about how to address this.
+
+Feedback on these ideas (as well as other contributions, of course) is welcome.
+
+## Early returns
+
+Many checks in functions trigger early returns. While this could theoretically be achieved with 
+[pc.annotations.Hooks](#pcannotationshooks) by changing the parameter into a special value, 
+being more explicit about this might be helpful. This could look as follows:
+
+```python 
+import parameter_checks as pc
+
+
+def hook_with_early_return(fct, parameter, parameter_name, typehint):
+    if ...:
+        # Ignore all other hooks and the function-body;
+        #   just return the values in EarlyReturn 
+        return pc.annotations.EarlyReturn["well, this did not work out"]
+    ...
+
+
+@pc.hints.enforce
+def foo(a: pc.annotations.Hooks[int, hook_with_early_return]):
+    # If a is of the wrong value, this part is never called;
+    #   instead, "well, this did not work out" will be returned 
+    #   immediately
+    ...
+```
+
+## Inter-parameter Checks
+
+Many checks compare two or more parameters; this can currently not be done with this package.
+One possibility for how it could be achieved is shown in the following example:
+
+```python
+import parameter_checks as pc
+
+
+@pc.hints.enforce
+def foo(
+        a, 
+        b: pc.annotations.Checks[
+            int,
+            pc.annotations.CompareWith[
+                "a", lambda b, a: b < a   # should take arbitrary number of args
+            ]
+        ]
+):
+    ...
+
+
+# Bigger example
+@pc.hints.enforce
+def bar(
+        a, 
+        b,
+        c: pc.annotations.Checks[
+            pc.annotations.CompareWith[
+                "a", "b", lambda c, a, b: a < b < c 
+            ]
+        ],
+        d: pc.annotations.Hooks[
+            pc.annotations.CompareWith[
+                "a", "b", "c", comparison_hook
+            ]
+        ]
+):
+    ...
+
+
+def comparison_hook(fct, parameters: list, parameter_names: list, typehint):
+    d, a, b, c = parameters 
+    dname, aname, bname, cname = parameter_names
+    ...
+```
