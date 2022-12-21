@@ -105,7 +105,7 @@ foo(0)   # raises ValueError
 
 The error-output will be improved upon with more information to make the traceback easier.
 
-**CAREFUL** Do not use this hint in any other hint (like `pc.annotations.Checks | float`, 
+**CAREFUL!** Do not use this hint in any other hint (like `pc.annotations.Checks | float`, 
 or `tuple[pc.annotations.Check, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
 and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations.Checks`. 
 
@@ -159,7 +159,7 @@ assert foo(5) == -2
 You can also use multiple hook-functions, which will be called on each other's output in the order
 in which they are given to `pc.annotations.Hooks`.
 
-**CAREFUL** Do not use this hint in any other hint (like `pc.annotations.Hooks | float`, 
+**CAREFUL!** Do not use this hint in any other hint (like `pc.annotations.Hooks | float`, 
 or `tuple[pc.annotations.Hooks, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
 and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations.Hooks`.
 
