@@ -63,6 +63,25 @@ class TestChecks:
         with pytest.raises(ValueError):
             div(1, 0)
 
+    def test_with_default_value(self):
+        def none_to_one(fct, parameter, parameter_name, typehint):
+            if parameter is not None:
+                assert type(parameter) is typehint
+
+            parameter = 1. if parameter is None else parameter
+            return parameter
+
+        @pc.hints.enforce
+        def div(a, b: pc.annotations.Hooks[float, none_to_one] = None):
+            return a / b
+
+        assert div(2., 2.) == 1.
+        assert div(2., None) == 2.
+        assert div(2.) == 2.
+
+        with pytest.raises(AssertionError):
+            div(2., "not a float!")
+
     def test_with_star_args_fct(self):
         @pc.hints.enforce
         def fct(a: pc.annotations.Checks[lambda a: a != 0], *args):

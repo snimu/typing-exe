@@ -10,73 +10,43 @@ def enforce(fct):
 
     @wraps(fct)
     def _run(*args, **kwargs):
-        args = _check_args(fct, args, annotations)
-        kwargs = _check_kwargs(fct, kwargs, annotations)
+        args, kwargs = _check_args_kwargs(args, kwargs, fct, annotations)
         returns = fct(*args, **kwargs)
         return _check_returns(fct, returns, annotations)
 
     return _run
 
 
-def _check_args(fct, args, annotations):
-
-    """
-    Run Checks and Hooks on args.
-
-    There is a problem with the simple approach of doing the simple approach of:
-
-        >>> i = 0   # Manual loop because zip and enforce don't work together well
-        >>> for arg, (name, check) in zip(args, annotations.items()):
-        >>>     if isinstance(check, pc.annotations._Checks):
-        >>>         check.enforce(fct, arg, name)
-        >>>     elif isinstance(check, pc.annotations._Hooks):
-        >>>         args[i] = check.enforce(fct, arg, name)
-        >>>     i += 1
-
-    Imagine the following function:
-
-        >>> @pc.hints.enforce
-        >>> def foo(a, b: pc.annotations.Checks[lambda b: b != 0]):
-        >>>     return a / b
-
-    Now imagine calling it as follows:
-
-        >>> foo(1, 0)
-
-    The loop-approach would assign the annotation of "b" to "a",
-      because there is only one annotation and zipping naively
-      leads to this alignment of values.
-    This means that the Checks wouldn't be enforced on the correct argument.
-    Therefore, the args and annotations have to be aligned.
-    """
+def _check_args_kwargs(args, kwargs, fct, annotations):
     signature = inspect.signature(fct)
-    args = list(args)   # so that Hooks.enforce can overwrite the args
-    i = 0   # Manual loop-counter because zip and enumerate don't play together well
+    args = list(args)
 
-    for name, parameter in zip(signature.parameters.keys(), args):
-        check = annotations.get(name)
-        if isinstance(check, pc.annotations._Checks):
-            check.enforce(fct, parameter, name)
-        elif isinstance(check, pc.annotations._Hooks):
-            args[i] = check.enforce(fct, parameter, name)
-        i += 1
+    for i, name in enumerate(signature.parameters.keys()):
+        if i < len(args):
+            # Handle positional arguments
+            args[i] = _enforce(fct, args[i], name, annotations)
+        elif name in kwargs.keys():
+            # Handle keyword arguments
+            kwargs[name] = _enforce(fct, kwargs[name], name, annotations)
+        elif signature.parameters.get(name).default != inspect.Parameter.empty:
+            # Handle default arguments that were not explicitly given as args or kwargs
+            arg = _enforce(fct, signature.parameters.get(name).default, name, annotations)
+            if signature.parameters.get(name).kind == inspect.Parameter.POSITIONAL_ONLY:
+                args.append(arg)
+            else:
+                kwargs[name] = arg
 
-    return tuple(args)
+    return tuple(args), kwargs
 
 
-def _check_kwargs(fct, kwargs, annotations):
-    new_kwargs = {}
-    for pname, pvalue in kwargs.items():
-        check = annotations.get(pname)
-        if isinstance(check, pc.annotations._Checks):
-            check.enforce(fct, pvalue, pname)
-            new_kwargs[pname] = pvalue
-        elif isinstance(annotations.get(pname), pc.annotations._Hooks):
-            new_kwargs[pname] = check.enforce(fct, pvalue, pname)
-        else:
-            new_kwargs[pname] = pvalue
+def _enforce(fct, parameter, name, annotations):
+    check = annotations.get(name)
+    if isinstance(check, pc.annotations._Checks):
+        check.enforce(fct, parameter, name)
+    elif isinstance(check, pc.annotations._Hooks):
+        parameter = check.enforce(fct, parameter, name)
 
-    return new_kwargs
+    return parameter
 
 
 def _check_returns(fct, returns, annotations):
