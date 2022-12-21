@@ -18,6 +18,13 @@ def enforce(fct):
 
 
 def _check_args_kwargs(args, kwargs, fct, annotations):
+    """
+    Has to deal with the following issues:
+
+    1. parameters without annotation -> can't just zip args and annotations, or they will be misaligned
+    2. parameters with default values -> not in args or kwargs
+    3. any combination of these with args and kwargs -> just go through function signature
+    """
     signature = inspect.signature(fct)
     args = list(args)
 
@@ -39,6 +46,10 @@ def _check_args_kwargs(args, kwargs, fct, annotations):
     return tuple(args), kwargs
 
 
+def _check_returns(fct, returns, annotations):
+    return _enforce(fct, returns, "return", annotations)
+
+
 def _enforce(fct, parameter, name, annotations):
     check = annotations.get(name)
     if isinstance(check, pc.annotations._Checks):
@@ -47,16 +58,6 @@ def _enforce(fct, parameter, name, annotations):
         parameter = check.enforce(fct, parameter, name)
 
     return parameter
-
-
-def _check_returns(fct, returns, annotations):
-    if isinstance(annotations.get("return"), pc.annotations._Checks):
-        checks = annotations.get("return")
-        checks.enforce(fct, returns, "return")
-    elif isinstance(annotations.get("return"), pc.annotations._Hooks):
-        hooks = annotations.get("return")
-        returns = hooks.enforce(fct, returns, "return")
-    return returns
 
 
 def cleanup(fct):
