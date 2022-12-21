@@ -32,6 +32,71 @@ pip3 install parameter_checks
 
 Basic example:
 
+```python 
+import parameter_checks as pc
+
+
+@pc.hints.enforce
+def div(a, b: pc.annotations.Checks[lambda b: b != 0]):
+    return a / b 
+
+div(1, 1)   # returns 1.0
+div(1, 0)   # raises ValueError
+```
+
+As can be seen in this example, this package provides a new type-annotation: [pc.annotations.Checks](#pcannotationschecks)
+(it also provides [pc.annotations.Hooks](#pcannotationshooks), as below). 
+Using [@pc.hints.enforce](#pchintsenforce) on a function will enforce the checks given to those 
+annotations (but not the types).
+
+### pc.annotations.Checks
+
+Add simple boolean checks on your parameters or return-values.
+
+#### Construction of Checks
+
+As seen in the [example](#example--checks), `pc.annotations.Checks` is constructed via its 
+`__getitem__`-method to conform to the type-hinting from [typing](https://docs.python.org/3/library/typing.html).
+
+The first parameter in the brackets can either be a type-hint or a callable. All others must be callables, or they will 
+be ignored by [@pc.hints.enforce](#pchintsenforce) and [@pc.hints.cleanup](#pchintscleanup). Any callable is assumed 
+to take one argument&mdash;the parameter&mdash;and return a `bool`. 
+If that bool is `False`, a `ValueError` will be raised. These callables will be referred to as "check functions" 
+from hereon out.
+
+#### Check-failure
+
+Using this annotation on a parameter- or return-hint of a callable that is decorated with 
+[@pc.hints.enforce](#pchintsenforce) means that the check-functions in the `Checks`-hint 
+will be executed and, if they fail, will raise a ValueError.
+
+The following code:
+
+```python
+import parameter_checks as pc
+
+
+@pc.hints.enforce
+def div(a: int, b: pc.annotations.Checks[lambda b: b != 0]):
+    return a / b
+
+
+div(1, 0)   # raises ValueError
+```
+
+Will produce the following exception: 
+
+    ValueError: 
+    Check failed! 
+        - Callable: 
+            - Name: foo
+            - Module: __main__
+        - Parameter: 
+            - Name: b
+            - Value: 0
+
+#### Example Checks
+
 ```python
 import parameter_checks as pc
 import enum
@@ -60,55 +125,7 @@ def function(
   ...
 ```
 
-As can be seen in this example, this package provides a new type-annotation: [pc.annotations.Checks](#pcannotationschecks)
-(it also provides [pc.annotations.Hooks](#pcannotationshooks), as seen in the example below). 
-Using [@pc.hints.enforce](#pchintsenforce) on a function will enforce the checks given to those 
-annotations (but not the types).
-
-### pc.annotations.Checks
-
-**Construction**
-
-As seen in the [example](#example--checks), `pc.annotations.Checks` is constructed via its 
-`__getitem__`-method to conform to the type-hinting from [typing](https://docs.python.org/3/library/typing.html).
-
-The first parameter in the brackets can either be a type-hint or a callable. All others must be callables, or they will 
-be ignored by [@pc.hints.enforce](#pchintsenforce) and [@pc.hints.cleanup](#pchintscleanup). Any callable is assumed 
-to take one argument&mdash;the parameter&mdash;and return a `bool`. 
-If that bool is `False`, a `ValueError` will be raised. These callables will be referred to as "check functions" 
-from hereon out.
-
-**Explanation with examples**
-
-Using this annotation on a parameter- or return-hint of a callable that is decorated with 
-[@pc.hints.enforce](#pchintsenforce) means that the check-functions in the `Checks`-hint 
-will be executed and, if they fail, will raise a ValueError 
-with that looks something like this:
-
-    ValueError: 
-    Check failed! 
-        - Callable: 
-            - Name: foo
-            - Module: __main__
-        - Parameter: 
-            - Name: b
-            - Value: 0
-
-For the following function:
-
-```python
-import parameter_checks as pc
-
-
-@pc.hints.enforce
-def div(a: int, b: pc.annotations.Checks[lambda b: b != 0]):
-    return a / b
-
-
-div(1, 0)   # raises ValueError
-```
-
-The error-output will be improved upon with more information to make the traceback easier.
+#### Notes on Checks
 
 **CAREFUL!** Do not use this hint in any other hint (like `pc.annotations.Checks | float`, 
 or `tuple[pc.annotations.Check, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
@@ -116,6 +133,11 @@ and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations
 
 
 ### pc.annotations.Hooks
+
+Hook functions to your parameters that modify them or raise exceptions before the actual 
+function even starts.
+
+#### Construction of Hooks
 
 This works similar to [pc.annotations.Checks](#pcannotationschecks), except that its check-functions work differently.
 
@@ -129,7 +151,44 @@ differently:
   4. **typehint**: the typehint.
 - They return the parameter &ndash; however modified. 
 
-**Example**
+#### Example 1 of Hooks
+
+```python 
+import torch
+import torchvision as tv
+import parameter_checks as pc
+
+
+transforms =  tv.transforms.Compose([   # examples for transforms that might be used just everywhere
+    tv.transforms.ToPILImage(), 
+    tv.transforms.ToTensor(),
+    tv.transforms.Normalize(mean=train_mean, std=train_std),
+    tv.transforms.RandomHorizontalFlip(),
+    tv.transforms.RandomVerticalFlip()
+])
+
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        ...
+
+    @pc.hints.enforce
+    def forward(self, tensor: pc.annotations.Hooks[transforms]):
+        ...
+```
+
+Yes, this could (and should) have been taken care of by the dataloader. 
+
+However, applying the transforms in the function-signature might allow 
+different models to use the same dataloader but with
+different transforms. It would make it obvious which transform belongs to which model 
+in the function-signature, instead of having to look it up in the 
+dataloader. If the `transforms` were properly named, it might make the code more 
+readable.
+
+This might not be the most practical example, but it hopefully serves as inspiration.
+
+#### Example 2 of Hooks
 
 ```python
 import parameter_checks as pc
@@ -160,6 +219,8 @@ assert foo(1) == 6
 assert foo(2) == 7
 assert foo(5) == -2
 ```
+
+#### Notes on Hooks
 
 You can also use multiple hook-functions, which will be called on each other's output in the order
 in which they are given to `pc.annotations.Hooks`.
