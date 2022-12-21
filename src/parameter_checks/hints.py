@@ -64,7 +64,7 @@ def cleanup(fct):
         if pc.annotations.is_typehint(typehint):
             new_annotations[parameter] = typehint
         elif (isinstance(typehint, pc.annotations._Checks) or isinstance(typehint, pc.annotations._Hooks)) \
-                and typehint.typehint is not None:
+                and typehint.typehint is not None:   # if it's not None, parse made sure that it's a typehint!
             new_annotations[parameter] = typehint.typehint
 
     fct.__annotations__ = new_annotations
