@@ -32,15 +32,15 @@ pip3 install parameter_checks
 
 - [Package](#package)
   - [pc.annotations.Checks](#pcannotationschecks)
-    - [Construction](#construction-of-checks)
-    - [Failure](#failed-checks)
-    - [Example](#example-checks)
-    - [Notes](#notes-on-checks)
+    - [Construction](#checks--construction)
+    - [Failure](#checks--failure)
+    - [Example](#checks--example)
+    - [Notes](#checks--notes)
   - [pc.annotations.Hooks](#pcannotationshooks)
-    - [Construction](#construction-of-hooks)
-    - [Example 1](#example-1-of-hooks)
-    - [Example 2](#example-2-of-hooks)
-    - [Notes](#notes-on-hooks)
+    - [Construction](#hooks--construction)
+    - [Example 1](#hooks--example-1)
+    - [Example 2](#hooks--example-2)
+    - [Notes](#hooks--notes)
   - [@pc.hints.enforce](#pchintsenforce)
   - [@pc.hints.cleanup](#pchintscleanup)
 - [But why?](#but-why)
@@ -72,9 +72,9 @@ annotations (but not the types). [@pc.hints.cleanup](#pchintscleanup) would prod
 
 Add simple boolean checks on your parameters or return-values.
 
-### Construction of Checks
+### Checks: Construction
 
-As seen in the [example](#example--checks), `pc.annotations.Checks` is constructed via its 
+As seen in the [example](#example-checks), `pc.annotations.Checks` is constructed via its 
 `__getitem__`-method to conform to the type-hinting from [typing](https://docs.python.org/3/library/typing.html).
 
 The first parameter in the brackets can either be a type-hint or a callable. All others must be callables, or they will 
@@ -83,7 +83,7 @@ to take one argument&mdash;the parameter&mdash;and return a `bool`.
 If that bool is `False`, a `ValueError` will be raised. These callables will be referred to as "check functions" 
 from hereon out.
 
-### Failed Checks
+### Checks: Failure
 
 Using this annotation on a parameter- or return-hint of a callable that is decorated with 
 [@pc.hints.enforce](#pchintsenforce) means that the check-functions in the `Checks`-hint 
@@ -96,8 +96,11 @@ import parameter_checks as pc
 
 
 @pc.hints.enforce
-def div(a: int, b: pc.annotations.Checks[lambda b: b != 0]):
-    return a / b
+def div(
+        numerator: int, 
+        denominator: pc.annotations.Checks[lambda denom: denom != 0]
+):
+    return numerator / denominator
 
 
 div(1, 0)   # raises ValueError
@@ -105,16 +108,17 @@ div(1, 0)   # raises ValueError
 
 Will produce the following exception: 
 
+    <Traceback ...>
     ValueError: 
     Check failed! 
         - Callable: 
             - Name: foo
             - Module: __main__
         - Parameter: 
-            - Name: b
+            - Name: denominator
             - Value: 0
 
-### Example Checks
+### Checks: Example
 
 ```python
 import parameter_checks as pc
@@ -144,7 +148,7 @@ def function(
   ...
 ```
 
-### Notes on Checks
+### Checks: Notes
 
 **CAREFUL!** Do not use this hint in any other hint (like `pc.annotations.Checks | float`, 
 or `tuple[pc.annotations.Check, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
@@ -153,24 +157,26 @@ and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations
 
 ## pc.annotations.Hooks
 
-Hook functions to your parameters that modify them or raise exceptions before the actual 
+Hook functions to your parameters to modify them or raise exceptions before the actual 
 function even starts.
 
-### Construction of Hooks
+### Hooks: Construction
 
 This works similar to [pc.annotations.Checks](#pcannotationschecks), except that its check-functions work differently.
 
-The first item in the brackets can again be a type or a callable, but the callables are now assumed to work 
-differently: 
+The first item in the brackets can again be a type or a callable and the rest are callables, 
+but the callables are now assumed to work differently: 
 
 - They take four arguments in the following order: 
-  1. **fct**: the function that was decorated by [@pc.hints.enforce](#pchintsenforce).
-  2. **parameter**: the value of the parameter that is annotated.
-  3. **parameter_name**: the name of that parameter.
-  4. **typehint**: the typehint.
-- They return the parameter &ndash; however modified. 
+  1. **fct**: the function that was decorated by [@pc.hints.enforce](#pchintsenforce)
+  2. **parameter**: the value of the parameter that is annotated
+  3. **parameter_name**: the name of that parameter
+  4. **typehint**: the typehint
+- They return the parameter (as modified by the hook)
+- If there are multiple hooks, they will be executed in the order in which they were given to `Hooks`. 
+Each hook then executes on the output of the previous hook.
 
-### Example 1 of Hooks
+### Hooks: Example 1
 
 ```python 
 import torch
@@ -178,7 +184,7 @@ import torchvision as tv
 import parameter_checks as pc
 
 
-transforms =  tv.transforms.Compose([   # examples for transforms that might be used just everywhere
+transforms =  tv.transforms.Compose([
     tv.transforms.ToPILImage(), 
     tv.transforms.ToTensor(),
     tv.transforms.Normalize(mean=train_mean, std=train_std),
@@ -207,7 +213,7 @@ readable.
 
 This might not be the most practical example, but it hopefully serves as inspiration.
 
-### Example 2 of Hooks
+### Hooks: Example 2
 
 ```python
 import parameter_checks as pc
@@ -239,7 +245,7 @@ assert foo(2) == 7
 assert foo(5) == -2
 ```
 
-### Notes on Hooks
+### Hooks: Notes
 
 You can also use multiple hook-functions, which will be called on each other's output in the order
 in which they are given to `pc.annotations.Hooks`.
@@ -253,8 +259,8 @@ and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations
 This decorator enforces the two above-mentioned hints ([pc.annotations.Checks](#pcannotationschecks) 
 and [pc.annotations.Hooks](#pcannotationshooks)) for a callable. 
 
-**CAREFUL** This decorator *doesn't* enforce type-hints, but only the check-functions. Type-hints 
-are only there for [@pc.hints.cleanup](#pchintscleanup).
+**CAREFUL!** This decorator *doesn't* enforce type-hints, but only the check- and hook-functions. 
+Type-hints are only there for [@pc.hints.cleanup](#pchintscleanup).
 
 ## @pc.hints.cleanup
 
