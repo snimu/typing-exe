@@ -23,10 +23,9 @@ Extend typehints to include dynamic checks (that might otherwise be dealt with b
 pip install parameter-checks
 ```
 
-**Comments**
+**PyPI-Package**
 
-- A proper documentation is (likely) coming
-- A conda-build may or may not come
+[parameter-checks](https://pypi.org/project/parameter-checks/)
 
 **Table of Contents**
 
