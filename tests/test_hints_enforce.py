@@ -63,6 +63,16 @@ class TestChecks:
         with pytest.raises(ValueError):
             div(1, 0)
 
+    def test_with_star_args_fct(self):
+        @pc.hints.enforce
+        def fct(a: pc.annotations.Checks[lambda a: a != 0], *args):
+            return a, *args
+
+        assert fct(1, 2, 3, 4) == (1, 2, 3, 4)
+
+        with pytest.raises(ValueError):
+            fct(0, 1)
+
 
 class TestHooks:
     def test_basic(self):
