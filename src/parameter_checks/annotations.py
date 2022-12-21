@@ -49,9 +49,13 @@ class _Checks:
 
         for check in self.checks:
             if not check(parameter):
-                err_str = f"Check failed! \n" \
-                          f"\t- function: {fct.__qualname__}\n" \
-                          f"\t- parameter: {parameter_name}"
+                err_str = f"\nCheck failed! \n" \
+                          f"\t- Callable: \n" \
+                          f"\t\t- Name: {fct.__qualname__}\n" \
+                          f"\t\t- Module: {fct.__module__}\n" \
+                          f"\t- Parameter: \n" \
+                          f"\t\t- Name: {parameter_name}\n" \
+                          f"\t\t- Value: {parameter}\n"
                 raise ValueError(err_str)
 
 

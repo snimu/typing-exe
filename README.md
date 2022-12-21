@@ -85,9 +85,14 @@ Using this annotation on a parameter- or return-hint of a callable that is decor
 will be executed and, if they fail, will raise a ValueError 
 with that looks something like this:
 
-    ValueError: Check failed! 
-        - function: foo
-        - parameter: a
+    ValueError: 
+    Check failed! 
+        - Callable: 
+            - Name: foo
+            - Module: __main__
+        - Parameter: 
+            - Name: b
+            - Value: 0
 
 For the following function:
 
@@ -96,11 +101,11 @@ import parameter_checks as pc
 
 
 @pc.hints.enforce
-def foo(a: pc.annotations.Checks[lambda a: a != 0]):
-    ... 
+def div(a: int, b: pc.annotations.Checks[lambda b: b != 0]):
+    return a / b
 
 
-foo(0)   # raises ValueError
+div(1, 0)   # raises ValueError
 ```
 
 The error-output will be improved upon with more information to make the traceback easier.
