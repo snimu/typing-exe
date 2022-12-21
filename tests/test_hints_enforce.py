@@ -53,6 +53,16 @@ class TestChecks:
         with pytest.raises(ValueError):
             faulty_abs(-1)
 
+    def test_args_without_typehints(self):
+        @pc.hints.enforce
+        def div(a, b: pc.annotations.Checks[lambda b: b != 0]):
+            return a / b
+
+        assert div(1, 1) == 1.
+
+        with pytest.raises(ValueError):
+            div(1, 0)
+
 
 class TestHooks:
     def test_basic(self):
