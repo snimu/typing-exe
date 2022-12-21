@@ -28,7 +28,24 @@ pip3 install parameter_checks
 - A proper documentation is (likely) coming
 - A conda-build may or may not come
 
-## Package
+**Table of Contents**
+
+- [Package](#package)
+  - [pc.annotations.Checks](#pcannotationschecks)
+    - [Construction](#construction-of-checks)
+    - [Failure](#failed-checks)
+    - [Example](#example-checks)
+    - [Notes](#notes-on-checks)
+  - [pc.annotations.Hooks](#pcannotationshooks)
+    - [Construction](#construction-of-hooks)
+    - [Example 1](#example-1-of-hooks)
+    - [Example 2](#example-2-of-hooks)
+    - [Notes](#notes-on-hooks)
+  - [@pc.hints.enforce](#pchintsenforce)
+  - [@pc.hints.cleanup](#pchintscleanup)
+- [But why?](#but-why)
+
+# Package
 
 Basic example:
 
@@ -51,11 +68,11 @@ Using [@pc.hints.enforce](#pchintsenforce) on a function will enforce the checks
 annotations (but not the types). [@pc.hints.cleanup](#pchintscleanup) would produce the 
 `div.__annotations__` of `{"a": int, "b": int}` in the example above.
 
-### pc.annotations.Checks
+## pc.annotations.Checks
 
 Add simple boolean checks on your parameters or return-values.
 
-#### Construction of Checks
+### Construction of Checks
 
 As seen in the [example](#example--checks), `pc.annotations.Checks` is constructed via its 
 `__getitem__`-method to conform to the type-hinting from [typing](https://docs.python.org/3/library/typing.html).
@@ -66,7 +83,7 @@ to take one argument&mdash;the parameter&mdash;and return a `bool`.
 If that bool is `False`, a `ValueError` will be raised. These callables will be referred to as "check functions" 
 from hereon out.
 
-#### Check-failure
+### Failed Checks
 
 Using this annotation on a parameter- or return-hint of a callable that is decorated with 
 [@pc.hints.enforce](#pchintsenforce) means that the check-functions in the `Checks`-hint 
@@ -97,7 +114,7 @@ Will produce the following exception:
             - Name: b
             - Value: 0
 
-#### Example Checks
+### Example Checks
 
 ```python
 import parameter_checks as pc
@@ -127,19 +144,19 @@ def function(
   ...
 ```
 
-#### Notes on Checks
+### Notes on Checks
 
 **CAREFUL!** Do not use this hint in any other hint (like `pc.annotations.Checks | float`, 
 or `tuple[pc.annotations.Check, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
 and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations.Checks`. 
 
 
-### pc.annotations.Hooks
+## pc.annotations.Hooks
 
 Hook functions to your parameters that modify them or raise exceptions before the actual 
 function even starts.
 
-#### Construction of Hooks
+### Construction of Hooks
 
 This works similar to [pc.annotations.Checks](#pcannotationschecks), except that its check-functions work differently.
 
@@ -153,7 +170,7 @@ differently:
   4. **typehint**: the typehint.
 - They return the parameter &ndash; however modified. 
 
-#### Example 1 of Hooks
+### Example 1 of Hooks
 
 ```python 
 import torch
@@ -190,7 +207,7 @@ readable.
 
 This might not be the most practical example, but it hopefully serves as inspiration.
 
-#### Example 2 of Hooks
+### Example 2 of Hooks
 
 ```python
 import parameter_checks as pc
@@ -222,7 +239,7 @@ assert foo(2) == 7
 assert foo(5) == -2
 ```
 
-#### Notes on Hooks
+### Notes on Hooks
 
 You can also use multiple hook-functions, which will be called on each other's output in the order
 in which they are given to `pc.annotations.Hooks`.
@@ -231,7 +248,7 @@ in which they are given to `pc.annotations.Hooks`.
 or `tuple[pc.annotations.Hooks, int, int]`). Both [@pc.hints.enforce](#pchintsenforce) 
 and [@pc.hints.cleanup](#pchintscleanup) will fully ignore these `pc.annotations.Hooks`.
 
-### @pc.hints.enforce
+## @pc.hints.enforce
 
 This decorator enforces the two above-mentioned hints ([pc.annotations.Checks](#pcannotationschecks) 
 and [pc.annotations.Hooks](#pcannotationshooks)) for a callable. 
@@ -239,7 +256,7 @@ and [pc.annotations.Hooks](#pcannotationshooks)) for a callable.
 **CAREFUL** This decorator *doesn't* enforce type-hints, but only the check-functions. Type-hints 
 are only there for [@pc.hints.cleanup](#pchintscleanup).
 
-### @pc.hints.cleanup
+## @pc.hints.cleanup
 
 This decorator removes any hint of `pc.annotations.Checks` (and `pc.annotations.Hooks`, as described below). This means that a 
 function annotated as follows:
@@ -274,7 +291,7 @@ of [pc.annotations.Checks](#pcannotationschecks) and [pc.annotations.Hooks](#pca
 in their own functions or decorators, or choose to remove those pesky annotations and have 
 normal-looking `__annotations__`.
 
-## But why?
+# But why?
 
 Few things are more useful in programming than the ability to constrain a program's possible behaviors 
 and communicate those constraints clearly in code. Statically typed languages do this with types, scope modifiers, 
