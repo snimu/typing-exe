@@ -20,7 +20,7 @@ Extend typehints to include dynamic checks (that might otherwise be dealt with b
 **Installation: Pip**
 
 ```bash
-pip3 install parameter_checks
+pip install parameter-checks
 ```
 
 **Comments**
