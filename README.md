@@ -44,6 +44,9 @@ pip3 install parameter_checks
   - [@pc.hints.enforce](#pchintsenforce)
   - [@pc.hints.cleanup](#pchintscleanup)
 - [But why?](#but-why)
+- [Ideas for extensions](#ideas-for-future-extensions)
+  - [Early Returns](#early-returns)
+  - [Inter-argument checks and hooks](#inter-parameter-checks-and-hooks)
 
 # Package
 
@@ -351,7 +354,7 @@ def foo(a: pc.annotations.Hooks[int, hook_with_early_return]):
     ...
 ```
 
-## Inter-parameter Checks
+## Inter-parameter Checks and Hooks
 
 Many checks compare two or more parameters; this can currently not be done with this package.
 One possibility for how it could be achieved is shown in the following example:
