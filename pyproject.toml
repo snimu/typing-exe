@@ -9,7 +9,7 @@ authors = [{name="Sebastian Müller"}, {email="sebastian.nicolas.mueller@gmail.c
 description = "Extend typehints to include dynamic checks (that might otherwise be dealt with by assertions) in Python."
 readme = "README.md"
 requires-python = ">=3.8"
-keywords = ["parameters", "checks", "types", "dynamic"]
+keywords = ["parameters", "return-values", "checks", "types", "dynamic", "decorator", "typehint"]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
