@@ -51,14 +51,18 @@ def classify(
         x: pc.annotations.Hooks[float, decision_boundary],
         additional_offset: pc.annotations.Checks[float, lambda b: 0 <= b <= 100] = 0.
 ) -> bool:
-  return (x + additional_offset) >= 0
+    return (x + additional_offset) >= 0
+    
 
-
-assert classify(1.) is True   # 6.
-assert classify(2.) is True   # 7.
-assert classify(5.) is False   # -2.
-assert classify(5., 2.) is True   # 0.
-
-classify("not a float!")  # raises TypeError
-classify(1., -1.)   # raises ValueError
+if __name__ == '__main__':
+    assert classify(1.) is True   # 6.
+    assert classify(2.) is True   # 7.
+    assert classify(5.) is False   # -2.
+    assert classify(5., 2.) is True   # 0.
+    
+    classify("not a float!")  # raises TypeError
+    classify(1., -1.)   # raises ValueError
 ```
+
+For additional comments on this example (and much more), 
+[visit the GitHub page of this project](https://github.com/snimu/parameter-checks#hooks-example-2).
