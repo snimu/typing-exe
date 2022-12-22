@@ -42,14 +42,7 @@ def decision_boundary(fct, parameter, parameter_name, typehint):
         err_str = f"In function {fct}, parameter {parameter_name}={parameter} " \
                   f"is not of type {typehint}!"
         raise TypeError(err_str)
-  
-    # Yes, the following calculation should be in the function-body,
-    #   but it demonstrates that arbitrary changes can be made here,
-    #   which might be useful if, for example, some conversion has 
-    #   to happen in many parameters of many functions. 
-    # Moving that conversion into its own function and calling it 
-    #   in the typehint might make the program more readable than 
-    #   packing it into the function-body.
+    
     return 3 + 4 * parameter - parameter ** 2
 
 

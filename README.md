@@ -67,8 +67,10 @@ div(1, 0)   # raises ValueError
 As can be seen in this example, this package provides a new type-annotation: [pc.annotations.Checks](#pcannotationschecks)
 (it also provides [pc.annotations.Hooks](#pcannotationshooks), see below). 
 Using [@pc.hints.enforce](#pchintsenforce) on a function will enforce the checks given to those 
-annotations (but not the types). [@pc.hints.cleanup](#pchintscleanup) would produce the 
-`div.__annotations__` of `{"a": int, "b": int}` in the example above.
+annotations (but not the types). [@pc.hints.cleanup](#pchintscleanup) cleans up the function's `__annotations__`,
+turning `div.__annotations__` from 
+`{'a': <class 'int'>, 'b': <parameter_checks.annotations._Checks object at 0x7fa62672a520>}` 
+to `{'a': <class 'int'>, 'b': <class 'int'>}` in the example above.
 
 ## pc.annotations.Checks
 
@@ -169,7 +171,7 @@ This works similar to [pc.annotations.Checks](#pcannotationschecks), except that
 The first item in the brackets can again be a type or a callable and the rest are callables, 
 but the callables are now assumed to work differently: 
 
-- They take four arguments in the following order: 
+- They take four positional arguments in the following order: 
   1. **fct**: the function that was decorated by [@pc.hints.enforce](#pchintsenforce)
   2. **parameter**: the value of the parameter that is annotated
   3. **parameter_name**: the name of that parameter
@@ -221,31 +223,38 @@ This might not be the most practical example, but it hopefully serves as inspira
 import parameter_checks as pc
 
 
-def hook_function(fct, parameter, parameter_name, typehint):
+def decision_boundary(fct, parameter, parameter_name, typehint):
     if type(parameter) is not typehint:
         err_str = f"In function {fct}, parameter {parameter_name}={parameter} " \
                   f"is not of type {typehint}!"
         raise TypeError(err_str)
     
-    # Yes, the following calculation should be in the function-body,
-    #   but it demonstrates that arbitrary changes can be made here,
-    #   which might be useful if, for example, some conversion has 
-    #   to happen in many parameters of many functions. 
-    # Moving that conversion into its own function and calling it 
-    #   in the typehint might make the program more readable than 
-    #   packing it into the function-body.
-    return 3 + 4 * parameter - parameter**2   
+    return 3 + 4 * parameter - parameter ** 2
 
 
 @pc.hints.enforce
-def foo(a: pc.annotations.Hooks[int, hook_function]):
-    return a 
+def classify(
+        x: pc.annotations.Hooks[float, decision_boundary],
+        additional_offset: pc.annotations.Checks[float, lambda b: 0 <= b <= 100] = 0.
+) -> bool:
+    return (x + additional_offset) >= 0
+    
 
-
-assert foo(1) == 6
-assert foo(2) == 7
-assert foo(5) == -2
+if __name__ == '__main__':
+    assert classify(1.) is True   # 6.
+    assert classify(2.) is True   # 7.
+    assert classify(5.) is False   # -2.
+    assert classify(5., 2.) is True   # 0.
+    
+    classify("not a float!")  # raises TypeError
+    classify(1., -1.)   # raises ValueError
 ```
+
+While the decision-boundary should probably be calculated in the function-body of `classify`,
+it might make sense to use it this way if there are other functions that use the same 
+decision-boundary, like a function that accumulates statistics on the input data 
+which might, when called repeatedly with random `x`, calculate the mean of the output 
+to determine what `additional_offset` should be in `classify`.
 
 ### Hooks: Notes
 
@@ -266,7 +275,8 @@ Type-hints are only there for [@pc.hints.cleanup](#pchintscleanup).
 
 ## @pc.hints.cleanup
 
-This decorator removes any hint of `pc.annotations.Checks` (and `pc.annotations.Hooks`, as described below). This means that a 
+This decorator removes any hint of [pc.annotations.Checks](#pcannotationschecks) 
+and [pc.annotations.Hooks](#pcannotationshooks). This means that a 
 function annotated as follows:
 
 ```python 
@@ -285,19 +295,23 @@ def foo(
 
 which is excpected to have the following `__annotations__`: 
 
-`{'a': int, 'b': pc.annotations.Checks[int, ...], 'return': pc.annotations.Checks[...]`
+`{'a': <class 'int'>, 'b': <parameter_checks.annotations._Checks object at 0x7fa62658f430>, 
+'return': <parameter_checks.annotations._Checks object at 0x7fa62642b7c0>}`
 
-now actually has these annotations:
+now actually has these `__annotations__`:
 
-`{'a': int, 'b': int}`
+`{'a': <class 'int'>, 'b': <class 'int'>}`
 
 This way, other decorators can work as usual. 
 
 This decorator is separate from 
-[@pc.hints.enforce](#pchintsenforce) so that users can decide to somehow make use
+[@pc.hints.enforce](#pchintsenforce) so that it can be used more flexibly. 
+
+- Users can decide to somehow make use
 of [pc.annotations.Checks](#pcannotationschecks) and [pc.annotations.Hooks](#pcannotationshooks)
-in their own functions or decorators, or choose to remove those pesky annotations and have 
-normal-looking `__annotations__`.
+in their own functions or decorators
+- Or they can choose to remove those pesky annotations and have 
+normal-looking `__annotations__`
 
 # But why?
 
