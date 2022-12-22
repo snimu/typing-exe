@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parameter-checks"
-version = "0.1.3"
+version = "1.0.0"
 authors = [{name="Sebastian Müller"}, {email="sebastian.nicolas.mueller@gmail.com"}]
 description = "Extend typehints to include dynamic checks (that might otherwise be dealt with by assertions) in Python."
 readme = "README-PyPI.md"
