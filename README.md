@@ -37,8 +37,7 @@ pip install parameter-checks
     - [Notes](#checks-notes)
   - [pc.annotations.Hooks](#pcannotationshooks)
     - [Construction](#hooks-construction)
-    - [Example 1](#hooks-example-1)
-    - [Example 2](#hooks-example-2)
+    - [Example](#hooks-example)
     - [Notes](#hooks-notes)
   - [@pc.hints.enforce](#pchintsenforce)
   - [@pc.hints.cleanup](#pchintscleanup)
@@ -78,7 +77,7 @@ Add simple boolean checks on your parameters or return-values.
 
 ### Checks: Construction
 
-As seen in the [example](#example-checks), `pc.annotations.Checks` is constructed via its 
+As seen in the [example](#parameter-checks), `pc.annotations.Checks` is constructed via its 
 `__getitem__`-method to conform to the type-hinting from [typing](https://docs.python.org/3/library/typing.html).
 
 The first parameter in the brackets can either be a type-hint or a callable. All others must be callables, or they will 
@@ -180,44 +179,7 @@ but the callables are now assumed to work differently:
 - If there are multiple hooks, they will be executed in the order in which they were given to `Hooks`. 
 Each hook then executes on the output of the previous hook.
 
-### Hooks: Example 1
-
-```python 
-import torch
-import torchvision as tv
-import parameter_checks as pc
-
-
-transforms =  tv.transforms.Compose([
-    tv.transforms.ToPILImage(), 
-    tv.transforms.ToTensor(),
-    tv.transforms.Normalize(mean=train_mean, std=train_std),
-    tv.transforms.RandomHorizontalFlip(),
-    tv.transforms.RandomVerticalFlip()
-])
-
-
-class Model(torch.nn.Module):
-    def __init__(self):
-        ...
-
-    @pc.hints.enforce
-    def forward(self, tensor: pc.annotations.Hooks[transforms]):
-        ...
-```
-
-Yes, this could (and should) have been taken care of by the dataloader. 
-
-However, applying the transforms in the function-signature might allow 
-different models to use the same dataloader but with
-different transforms. It would make it obvious which transform belongs to which model 
-in the function-signature, instead of having to look it up in the 
-dataloader. If the `transforms` were properly named, it might make the code more 
-readable.
-
-This might not be the most practical example, but it hopefully serves as inspiration.
-
-### Hooks: Example 2
+### Hooks: Example 
 
 ```python
 import parameter_checks as pc
