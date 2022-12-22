@@ -1,37 +1,28 @@
-from typing import Union, Type
-
-
-def is_typehint(value) -> bool: ...
+from typing import Union, Type, Any
+from typing_extensions import TypeAlias
 
 
 class _Checks:
-    def __init__(self):
-        self.checks = None
-        self.typehint = None
-
+    def __init__(self): ...
     def __getitem__(self, checks): ...
 
-    def enforce(self): ...
+    def enforce(self, fct: callable, parameter: Any, parameter_name: str): ...
 
 
 class _Hooks:
     def __init__(self):
-        self.typehint = None
-        self.hooks = None
+        self.typehint: type
+        self.hooks: list
 
     def __getitem__(self, item): ...
 
-    def enforce(self, fct, parameter, parameter_name): ...
+    def enforce(self, fct: callable, parameter: Any, parameter_name: str): ...
 
 
 class _HintsCreator:
-    def __init__(self, _class: Union[Type[_Checks], Type[_Hooks]]):
-        self._class = _class
-        self.checks = None
-        self.typehint = None
-
+    def __init__(self, _class: Union[Type[_Checks], Type[_Hooks]]): ...
     def __getitem__(self, item) -> Union[_Checks, _Hooks]: ...
 
 
-Checks: _HintsCreator
-Hooks: _HintsCreator
+Checks: TypeAlias  = _HintsCreator(_Checks)
+Hooks: TypeAlias = _HintsCreator(_Hooks)
