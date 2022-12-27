@@ -59,7 +59,7 @@ class _Modify(_PreProcess):
             for hook in self.items:
                 parameter = hook(parameter)
                 if isinstance(parameter, EarlyReturn):
-                    return parameter   # Value unpacked in @pc.hints.enforce
+                    return parameter   # Value unpacked in @execute_annotations
 
         return parameter
 

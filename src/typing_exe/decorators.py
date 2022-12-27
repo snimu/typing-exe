@@ -101,11 +101,11 @@ def _enforce_annotation(parameter, parameter_name, annotation, fct):
     elif isinstance(annotation, texe.annotations._Modify):
         parameter = annotation.enforce(parameter)
         if isinstance(parameter, texe.early_return.EarlyReturn):
-            return parameter  # EarlyReturn then handeled in enforce
+            return parameter  # EarlyReturn then handeled in execute_annotations
     elif isinstance(annotation, texe.annotations._Sequence):
         parameter = annotation.enforce(fct, parameter, parameter_name)
         if isinstance(parameter, texe.early_return.EarlyReturn):
-            return parameter  # EarlyReturn then handeled in enforce
+            return parameter  # EarlyReturn then handeled in execute_annotations
 
     return parameter
 
