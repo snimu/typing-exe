@@ -2,7 +2,7 @@ import copy
 import inspect
 from functools import wraps
 
-import parameter_checks as pc
+import typing_exe as texe
 
 
 def enforce(fct):
@@ -52,9 +52,9 @@ def _check_returns(fct, returns, annotations):
 
 def _enforce(fct, parameter, name, annotations):
     check = annotations.get(name)
-    if isinstance(check, pc.annotations._Checks):
+    if isinstance(check, texe.annotations._Checks):
         check.enforce(fct, parameter, name)
-    elif isinstance(check, pc.annotations._Hooks):
+    elif isinstance(check, texe.annotations._Hooks):
         parameter = check.enforce(fct, parameter, name)
 
     return parameter
@@ -66,9 +66,9 @@ def cleanup(fct):
     for parameter, typehint in fct.__annotations__.items():
         if typehint is None:
             continue
-        if pc.annotations.is_typehint(typehint):
+        if texe.annotations.is_typehint(typehint):
             new_annotations[parameter] = typehint
-        elif (isinstance(typehint, pc.annotations._Checks) or isinstance(typehint, pc.annotations._Hooks)) \
+        elif (isinstance(typehint, texe.annotations._Checks) or isinstance(typehint, texe.annotations._Hooks)) \
                 and typehint.typehint is not None:   # if it's not None, parse made sure that it's a typehint!
             new_annotations[parameter] = typehint.typehint
 

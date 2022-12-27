@@ -1,2 +1,2 @@
-import parameter_checks.hints
-import parameter_checks.annotations
+import typing_exe.hints
+import typing_exe.annotations
