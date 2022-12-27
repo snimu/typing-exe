@@ -53,6 +53,9 @@ class _Assert(_PreProcess):
                           f"\t- Callable: \n" \
                           f"\t\t- Name: {fct.__qualname__}\n" \
                           f"\t\t- Module: {fct.__module__}\n" \
+                          f"\tAssertion:\n" \
+                          f"\t\t- Name: {item.__qualname__}\n" \
+                          f"\t\t- Module: {item.__module__}\n" \
                           f"\t- Parameter: \n" \
                           f"\t\t- Name: {parameter_name}\n" \
                           f"\t\t- Value: {parameter}\n"
