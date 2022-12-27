@@ -4,31 +4,33 @@ import typing_exe as texe
 from typing_exe.early_return import EarlyReturn
 
 
-def parse(items):
-    # Checks is never empty because this eventuality
-    #   is caught by _HintsCreator
-    if not isinstance(items, tuple):
-        items = (items,)
-    if len(items) == 1 and texe.util.is_typehint(items[0]):
-        return items[0], None
-    if len(items) == 1 and callable(items[0]):
-        return None, items
-    if len(items) > 1:
-        typehint = None
-        if texe.util.is_typehint(items[0]):
-            typehint = items[0]
-            items = items[1:]
+class _PreProcess:
+    @staticmethod
+    def parse_getitem(items):
+        # Checks is never empty because this eventuality
+        #   is caught by _HintsCreator
+        if not isinstance(items, tuple):
+            items = (items,)
+        if len(items) == 1 and texe.util.is_typehint(items[0]):
+            return items[0], None
+        if len(items) == 1 and callable(items[0]):
+            return None, items
+        if len(items) > 1:
+            typehint = None
+            if texe.util.is_typehint(items[0]):
+                typehint = items[0]
+                items = items[1:]
 
-        items = [item for item in items if callable(item) and not texe.util.is_typehint(item)]
-        items = None if not items else items   # Assume None or has entries in .enforce
-        return typehint, items
+            items = [item for item in items if callable(item) and not texe.util.is_typehint(item)]
+            items = None if not items else items   # Assume None or has entries in .enforce
+            return typehint, items
 
-    return None, None  # in case of complete nonsense
+        return None, None  # in case of complete nonsense
 
 
-class _Assert:
+class _Assert(_PreProcess):
     def __getitem__(self, items):
-        self.typehint, self.items = parse(items)
+        self.typehint, self.items = self.parse_getitem(items)
         return self
 
     def enforce(self, fct, parameter, parameter_name):
@@ -47,9 +49,9 @@ class _Assert:
                 raise ValueError(err_str)
 
 
-class _Modify:
+class _Modify(_PreProcess):
     def __getitem__(self, items):
-        self.typehint, self.items = parse(items)
+        self.typehint, self.items = self.parse_getitem(items)
         return self
 
     def enforce(self, parameter):
