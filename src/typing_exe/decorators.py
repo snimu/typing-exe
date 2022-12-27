@@ -96,9 +96,9 @@ def _get_data(signature):
 
 
 def _enforce_annotation(parameter, parameter_name, annotation, fct):
-    if isinstance(annotation, texe.annotations._Checks):
+    if isinstance(annotation, texe.annotations._Assert):
         annotation.enforce(fct, parameter, parameter_name)
-    elif isinstance(annotation, texe.annotations._Hooks):
+    elif isinstance(annotation, texe.annotations._Modify):
         parameter = annotation.enforce(parameter)
         if isinstance(parameter, texe.early_return.EarlyReturn):
             return parameter  # EarlyReturn then handeled in enforce

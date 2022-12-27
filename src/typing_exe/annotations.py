@@ -26,7 +26,7 @@ def parse(values):
     return None, None  # in case of complete nonsense
 
 
-class _Checks:
+class _Assert:
     def __init__(self):
         self.typehint = None
         self.checks = None
@@ -51,7 +51,7 @@ class _Checks:
                 raise ValueError(err_str)
 
 
-class _Hooks:
+class _Modify:
     def __init__(self):
         self.typehint = None
         self.hooks = None
@@ -81,9 +81,9 @@ class _Sequence:
 
     def enforce(self, fct, parameter, parameter_name):
         for hint in self.hints:
-            if isinstance(hint, _Checks):
+            if isinstance(hint, _Assert):
                 hint.enforce(fct, parameter, parameter_name)
-            elif isinstance(hint, _Hooks):
+            elif isinstance(hint, _Modify):
                 parameter = hint.enforce(parameter)
                 if isinstance(parameter, EarlyReturn):
                     return parameter   # Value unpacked in @pc.hints.enforce
@@ -113,24 +113,24 @@ class _Sequence:
 
     @staticmethod
     def is_checks_or_hooks(item):
-        return isinstance(item, _Checks) or isinstance(item, _Hooks)
+        return isinstance(item, _Assert) or isinstance(item, _Modify)
 
 
 class _HintsCreator:
-    def __init__(self, _class: Union[Type[_Checks], Type[_Hooks], Type[_Sequence]]):
+    def __init__(self, _class: Union[Type[_Assert], Type[_Modify], Type[_Sequence]]):
         self._class = _class
         self.typehint = None
         self.checks = None
 
-    def __getitem__(self, item) -> Union[_Checks, _Hooks]:
+    def __getitem__(self, item) -> Union[_Assert, _Modify]:
         return self._class()[item]
 
 
-Checks = _HintsCreator(_Checks)
+Checks = _HintsCreator(_Assert)
 Checks.__doc__ = \
     """TODO"""
 
-Hooks = _HintsCreator(_Hooks)
+Hooks = _HintsCreator(_Modify)
 Hooks.__doc__ = \
     """TODO"""
 

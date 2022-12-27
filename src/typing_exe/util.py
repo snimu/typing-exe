@@ -4,8 +4,8 @@ import typing_exe as texe
 
 def is_package_annotation(annotation):
     annotations = [
-        texe.annotations._Checks,
-        texe.annotations._Hooks,
+        texe.annotations._Assert,
+        texe.annotations._Modify,
         texe.annotations._Sequence
     ]
     return type(annotation) in annotations
