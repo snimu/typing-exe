@@ -1,23 +1,25 @@
 from typing import Union
 import pytest
-import typing_exe as texe
+
+from typing_exe.annotations import Assert, Sequence, Modify
+from typing_exe.decorators import execute_annotations, cleanup_annotations
 
 
 def test_cleanup():
-    @texe.decorators.cleanup_annotations
-    @texe.decorators.execute_annotations
+    @cleanup_annotations
+    @execute_annotations
     def fct(
-            a: texe.annotations.Assert[lambda a: a > 0],
+            a: Assert[lambda a: a > 0],
             b: float,
-            c: texe.annotations.Assert[int, lambda c: c != 0],
+            c: Assert[int, lambda c: c != 0],
             d,
             e: Union[int, float],
-            f: texe.annotations.Sequence[
+            f: Sequence[
                 int,
-                texe.annotations.Assert[lambda a: a != 0],
-                texe.annotations.Modify[lambda a: a + 1]
+                Assert[lambda a: a != 0],
+                Modify[lambda a: a + 1]
             ]
-    ) -> texe.annotations.Modify[int]:
+    ) -> Modify[int]:
         return int(a + b + c + d + e + f)
 
     # Check that enforce works:

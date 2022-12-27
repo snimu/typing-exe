@@ -1,26 +1,25 @@
 import typing
-
 import pytest
 
-import typing_exe as texe
+from typing_exe.annotations import Assert, Modify
 
 
 class TestChecks:
     def test_construction(self):
         def check_fct(a):
             return a < 1
-        checks = texe.annotations.Assert[int, check_fct]
+        checks = Assert[int, check_fct]
         assert checks.items == [check_fct]
         assert checks.typehint is int
 
     def test_construction_invalid_inputs(self):
         for inputs in ((1, ), (1, 2, 3)):
-            checks = texe.annotations.Assert[inputs]
+            checks = Assert[inputs]
             assert checks.items is None
             assert checks.typehint is None
 
     def test_construction_just_type(self):
-        checks = texe.annotations.Assert[int]
+        checks = Assert[int]
         assert checks.items is None
         assert checks.typehint is int
 
@@ -28,12 +27,12 @@ class TestChecks:
         def check_fct(a):
             return a < 1
 
-        checks = texe.annotations.Assert[check_fct]
+        checks = Assert[check_fct]
         assert checks.items == (check_fct,)
         assert checks.typehint is None
 
     def test_construction_empty(self):
-        checks = texe.annotations.Assert
+        checks = Assert
 
         with pytest.raises(AttributeError):
             items = checks.items
@@ -45,7 +44,7 @@ class TestChecks:
         def check_fct(a):
             return a != 0
 
-        checks = texe.annotations.Assert[
+        checks = Assert[
             int, typing.Union[int, float], typing.Tuple[int, int],
             check_fct
         ]
@@ -56,7 +55,7 @@ class TestChecks:
 
 class TestHook:
     def test_construction(self):
-        hooks = texe.annotations.Modify[lambda x: x ** 2, lambda x: x - 2]
+        hooks = Modify[lambda x: x ** 2, lambda x: x - 2]
 
         assert hooks.items[0](2) == 4
         assert hooks.items[1](2) == 0

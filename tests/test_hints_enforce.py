@@ -1,12 +1,15 @@
 import pytest
-import typing_exe as texe
 from typing import Union
+
+from typing_exe.decorators import execute_annotations
+from typing_exe.annotations import Assert, Modify, Sequence
+from typing_exe.early_return import EarlyReturn
 
 
 class TestChecks:
     def test_basic(self):
-        @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Assert[int, lambda a: a < 5]):
+        @execute_annotations
+        def fct(a: Assert[int, lambda a: a < 5]):
             return a
 
         assert fct(1) == 1
@@ -15,12 +18,12 @@ class TestChecks:
             fct(5)
 
     def test_multiple(self):
-        @texe.decorators.execute_annotations
+        @execute_annotations
         def fct(
-                a: texe.annotations.Assert[lambda a: a != 0, lambda a: a % 3 == 0],
+                a: Assert[lambda a: a != 0, lambda a: a % 3 == 0],
                 b: int,
                 c,
-                d: texe.annotations.Assert[int] = None
+                d: Assert[int] = None
         ):
             return a, b, c, d
 
@@ -34,8 +37,8 @@ class TestChecks:
             fct(1, 1, 1, 1)
 
     def test_typing(self):
-        @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Assert[Union[int, float], lambda a: a != 0]):
+        @execute_annotations
+        def fct(a: Assert[Union[int, float], lambda a: a != 0]):
             return a
 
         assert fct(1) == 1
@@ -44,8 +47,8 @@ class TestChecks:
             fct(0)
 
     def test_return(self):
-        @texe.decorators.execute_annotations
-        def faulty_abs(a: int) -> texe.annotations.Assert[lambda r: r >= 0]:
+        @execute_annotations
+        def faulty_abs(a: int) -> Assert[lambda r: r >= 0]:
             return a
 
         assert faulty_abs(1) == 1
@@ -54,8 +57,8 @@ class TestChecks:
             faulty_abs(-1)
 
     def test_args_without_typehints(self):
-        @texe.decorators.execute_annotations
-        def div(a, b: texe.annotations.Assert[lambda b: b != 0]):
+        @execute_annotations
+        def div(a, b: Assert[lambda b: b != 0]):
             return a / b
 
         assert div(1, 1) == 1.
@@ -71,8 +74,8 @@ class TestChecks:
             parameter = 1. if parameter is None else parameter
             return parameter
 
-        @texe.decorators.execute_annotations
-        def div(a, b: texe.annotations.Modify[float, none_to_one] = None):
+        @execute_annotations
+        def div(a, b: Modify[float, none_to_one] = None):
             return a / b
 
         assert div(2., 2.) == 1.
@@ -83,8 +86,8 @@ class TestChecks:
             div(2., "not a float!")
 
     def test_with_star_args_fct(self):
-        @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Assert[lambda a: a != 0], *args):
+        @execute_annotations
+        def fct(a: Assert[lambda a: a != 0], *args):
             return a, *args
 
         assert fct(1, 2, 3, 4) == (1, 2, 3, 4)
@@ -100,8 +103,8 @@ class TestHooks:
                 raise ValueError("Hook failed!")
             return (parameter + 1)**2
 
-        @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Modify[int, hookfct]) -> int:
+        @execute_annotations
+        def fct(a: Modify[int, hookfct]) -> int:
             return a
 
         assert fct(1) == 4
@@ -111,8 +114,8 @@ class TestHooks:
             fct(0)
 
     def test_returns(self):
-        @texe.decorators.execute_annotations
-        def abs_fct(a: int) -> texe.annotations.Modify[lambda a: abs(a)]:
+        @execute_annotations
+        def abs_fct(a: int) -> Modify[lambda a: abs(a)]:
             return a
 
         assert abs_fct(1) == 1
@@ -121,13 +124,13 @@ class TestHooks:
 
 class TestSequence:
     def test_base(self):
-        @texe.decorators.execute_annotations
+        @execute_annotations
         def foo(
-                a: texe.annotations.Sequence[
+                a: Sequence[
                     int,
-                    texe.annotations.Assert[lambda a: a != 0],
-                    texe.annotations.Modify[lambda a: a + 1],
-                    texe.annotations.Assert[lambda a: a % 2 == 0]
+                    Assert[lambda a: a != 0],
+                    Modify[lambda a: a + 1],
+                    Assert[lambda a: a % 2 == 0]
                 ]
         ):
             return a
@@ -145,14 +148,14 @@ class TestEarlyReturn:
     def test_base(self):
         def none_to_one(parameter):
             if parameter == 0.:
-                return texe.early_return.EarlyReturn(0.)   # just to check that the Check isn't triggered
+                return EarlyReturn(0.)   # just to check that the Check isn't triggered
             return parameter
 
-        @texe.decorators.execute_annotations
+        @execute_annotations
         def foo(
-                a: texe.annotations.Sequence[
-                    texe.annotations.Modify[none_to_one],
-                    texe.annotations.Assert[lambda a: a != 0]   # should never raise ValueError
+                a: Sequence[
+                    Modify[none_to_one],
+                    Assert[lambda a: a != 0]   # should never raise ValueError
                 ]
         ):
             return a + 1.   # Just to make sure that this isn't triggered when EarlyReturn is used
@@ -163,18 +166,18 @@ class TestEarlyReturn:
     def test_in_different_positions(self):
         def hook1(p):
             if p == 0.:
-                return texe.early_return.EarlyReturn(0.)
+                return EarlyReturn(0.)
             return p
 
         def hook2(p):
             if p == 2.:
-                return texe.early_return.EarlyReturn(4.)   # To see if calculation happens after function body
+                return EarlyReturn(4.)   # To see if calculation happens after function body
             return p
 
-        @texe.decorators.execute_annotations
+        @execute_annotations
         def foo(
-                a: texe.annotations.Modify[hook1] = texe.early_return.EarlyReturn(-1.), /   # to test if it works positional only
-        ) -> texe.annotations.Modify[hook2]:
+                a: Modify[hook1] = EarlyReturn(-1.), /   # to test if it works positional only
+        ) -> Modify[hook2]:
             return a + 1.
 
         assert foo() == -1.  # default EarlyReturn

@@ -1,11 +1,13 @@
 from concurrent.futures import ThreadPoolExecutor
-import typing_exe as texe
 import pytest
+
+from typing_exe.annotations import Modify, Assert
+from typing_exe.decorators import execute_annotations
 
 
 def test_checks_threaded():
-    @texe.decorators.execute_annotations
-    def threaded_function(a: texe.annotations.Assert[lambda a: a != 0]):
+    @execute_annotations
+    def threaded_function(a: Assert[lambda a: a != 0]):
         return a
 
     # Check if checks work non-threaded
@@ -18,9 +20,9 @@ def test_checks_threaded():
         executor.map(threaded_function, range(1, 31))
 
 def test_hooks_threaded():
-    @texe.decorators.execute_annotations
+    @execute_annotations
     def threaded_function(
-            a: texe.annotations.Modify[
+            a: Modify[
                 lambda p: p + 1,
                 lambda p: p**2
             ]
