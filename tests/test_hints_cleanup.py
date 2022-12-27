@@ -4,7 +4,7 @@ import typing_exe as texe
 
 
 def test_cleanup():
-    @texe.decorators.cleanup
+    @texe.decorators.cleanup_annotations
     @texe.decorators.execute_annotations
     def fct(
             a: texe.annotations.Checks[lambda a: a > 0],

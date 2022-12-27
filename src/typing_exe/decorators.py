@@ -120,7 +120,7 @@ def _enforce_annotation(parameter, parameter_name, annotation, fct):
     return parameter
 
 
-def cleanup(fct):
+def cleanup_annotations(fct):
     new_annotations = {}
 
     for parameter, typehint in fct.__annotations__.items():
