@@ -4,8 +4,8 @@ import typing_exe as texe
 
 
 def test_cleanup():
-    @texe.hints.cleanup
-    @texe.hints.enforce
+    @texe.decorators.cleanup
+    @texe.decorators.enforce
     def fct(
             a: texe.annotations.Checks[lambda a: a > 0],
             b: float,
