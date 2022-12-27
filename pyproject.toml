@@ -9,7 +9,7 @@ authors = [{name="Sebastian Müller"}, {email="sebastian.nicolas.mueller@gmail.c
 description = "Executable typehints for Python: make assertions about and/or modify parameters & return values"
 readme = "README.md"
 requires-python = ">=3.8"
-keywords = ["parameters", "return-value", "checks", "types", "dynamic", "decorator", "typehint"]
+keywords = ["parameters", "return-value", "typing", "assert", "modify", "decorator", "typehint"]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
