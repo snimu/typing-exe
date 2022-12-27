@@ -1,12 +1,12 @@
 import pytest
-import parameter_checks as pc
+import typing_exe as texe
 from typing import Union
 
 
 class TestChecks:
     def test_basic(self):
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Checks[int, lambda a: a < 5]):
+        @texe.hints.enforce
+        def fct(a: texe.annotations.Checks[int, lambda a: a < 5]):
             return a
 
         assert fct(1) == 1
@@ -15,12 +15,12 @@ class TestChecks:
             fct(5)
 
     def test_multiple(self):
-        @pc.hints.enforce
+        @texe.hints.enforce
         def fct(
-                a: pc.annotations.Checks[lambda a: a != 0, lambda a: a%3 == 0],
+                a: texe.annotations.Checks[lambda a: a != 0, lambda a: a % 3 == 0],
                 b: int,
                 c,
-                d: pc.annotations.Checks[int] = None
+                d: texe.annotations.Checks[int] = None
         ):
             return a, b, c, d
 
@@ -34,8 +34,8 @@ class TestChecks:
             fct(1, 1, 1, 1)
 
     def test_typing(self):
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Checks[Union[int, float], lambda a: a != 0]):
+        @texe.hints.enforce
+        def fct(a: texe.annotations.Checks[Union[int, float], lambda a: a != 0]):
             return a
 
         assert fct(1) == 1
@@ -44,8 +44,8 @@ class TestChecks:
             fct(0)
 
     def test_return(self):
-        @pc.hints.enforce
-        def faulty_abs(a: int) -> pc.annotations.Checks[lambda r: r >= 0]:
+        @texe.hints.enforce
+        def faulty_abs(a: int) -> texe.annotations.Checks[lambda r: r >= 0]:
             return a
 
         assert faulty_abs(1) == 1
@@ -54,8 +54,8 @@ class TestChecks:
             faulty_abs(-1)
 
     def test_args_without_typehints(self):
-        @pc.hints.enforce
-        def div(a, b: pc.annotations.Checks[lambda b: b != 0]):
+        @texe.hints.enforce
+        def div(a, b: texe.annotations.Checks[lambda b: b != 0]):
             return a / b
 
         assert div(1, 1) == 1.
@@ -71,8 +71,8 @@ class TestChecks:
             parameter = 1. if parameter is None else parameter
             return parameter
 
-        @pc.hints.enforce
-        def div(a, b: pc.annotations.Hooks[float, none_to_one] = None):
+        @texe.hints.enforce
+        def div(a, b: texe.annotations.Hooks[float, none_to_one] = None):
             return a / b
 
         assert div(2., 2.) == 1.
@@ -83,8 +83,8 @@ class TestChecks:
             div(2., "not a float!")
 
     def test_with_star_args_fct(self):
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Checks[lambda a: a != 0], *args):
+        @texe.hints.enforce
+        def fct(a: texe.annotations.Checks[lambda a: a != 0], *args):
             return a, *args
 
         assert fct(1, 2, 3, 4) == (1, 2, 3, 4)
@@ -100,8 +100,8 @@ class TestHooks:
                 raise ValueError("Hook failed!")
             return (parameter + 1)**2
 
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Hooks[int, hookfct]) -> int:
+        @texe.hints.enforce
+        def fct(a: texe.annotations.Hooks[int, hookfct]) -> int:
             return a
 
         assert fct(1) == 4
@@ -114,8 +114,8 @@ class TestHooks:
         def hookfct(fct, parameter, parameter_name, typehint):
             return abs(parameter)
 
-        @pc.hints.enforce
-        def abs_fct(a: int) -> pc.annotations.Hooks[hookfct]:
+        @texe.hints.enforce
+        def abs_fct(a: int) -> texe.annotations.Hooks[hookfct]:
             return a
 
         assert abs_fct(1) == 1
