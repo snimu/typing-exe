@@ -27,10 +27,6 @@ def parse(values):
 
 
 class _Assert:
-    def __init__(self):
-        self.typehint = None
-        self.checks = None
-
     def __getitem__(self, checks):
         self.typehint, self.checks = parse(checks)
         return self
@@ -52,10 +48,6 @@ class _Assert:
 
 
 class _Modify:
-    def __init__(self):
-        self.typehint = None
-        self.hooks = None
-
     def __getitem__(self, hooks):
         self.typehint, self.hooks = parse(hooks)
         return self
@@ -71,10 +63,6 @@ class _Modify:
 
 
 class _Sequence:
-    def __init__(self):
-        self.typehint = None
-        self.hints = None
-
     def __getitem__(self, hints):
         self.typehint, self.hints = self.parse(hints)
         return self
@@ -119,8 +107,6 @@ class _Sequence:
 class _HintsCreator:
     def __init__(self, _class: Union[Type[_Assert], Type[_Modify], Type[_Sequence]]):
         self._class = _class
-        self.typehint = None
-        self.checks = None
 
     def __getitem__(self, item) -> Union[_Assert, _Modify]:
         return self._class()[item]

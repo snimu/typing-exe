@@ -28,11 +28,11 @@ class TestChecks:
         checks = texe.annotations.Assert[check_fct]
         assert checks.checks == (check_fct, )
         assert checks.typehint is None
-
-    def test_construction_empty(self):
-        checks = texe.annotations.Assert
-        assert checks.checks is None
-        assert checks.typehint is None
+    #
+    # def test_construction_empty(self):
+    #     checks = texe.annotations.Assert
+    #     assert checks.checks is None
+    #     assert checks.typehint is None
 
     def test_construction_multiple_typehints_in_checks(self):
         def check_fct(a):
