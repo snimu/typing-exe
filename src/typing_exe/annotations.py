@@ -27,6 +27,10 @@ class _PreProcess:
 
         return None, None  # in case of complete nonsense
 
+    @staticmethod
+    def execute_item(item: callable, parameter):
+        return item(parameter)
+
 
 class _Assert(_PreProcess):
     def __getitem__(self, items):
@@ -38,7 +42,7 @@ class _Assert(_PreProcess):
             return
 
         for check in self.items:
-            if not check(parameter):
+            if not self.execute_item(check, parameter):
                 err_str = f"\nCheck failed! \n" \
                           f"\t- Callable: \n" \
                           f"\t\t- Name: {fct.__qualname__}\n" \
@@ -57,7 +61,7 @@ class _Modify(_PreProcess):
     def enforce(self, parameter):
         if self.items is not None:
             for hook in self.items:
-                parameter = hook(parameter)
+                parameter = self.execute_item(hook, parameter)
                 if isinstance(parameter, EarlyReturn):
                     return parameter   # Value unpacked in @execute_annotations
 
