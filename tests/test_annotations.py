@@ -1,3 +1,4 @@
+import inspect
 import typing
 import pytest
 
@@ -9,7 +10,7 @@ class TestChecks:
         def check_fct(a):
             return a < 1
         checks = Assert[int, check_fct]
-        assert checks.items == [check_fct]
+        assert isinstance(checks.items.get(check_fct), inspect.Signature)
         assert checks.typehint is int
 
     def test_construction_invalid_inputs(self):
@@ -28,7 +29,7 @@ class TestChecks:
             return a < 1
 
         checks = Assert[check_fct]
-        assert checks.items == (check_fct,)
+        assert isinstance(checks.items.get(check_fct), inspect.Signature)
         assert checks.typehint is None
 
     def test_construction_empty(self):
@@ -50,12 +51,13 @@ class TestChecks:
         ]
 
         assert checks.typehint is int
-        assert checks.items == [check_fct]
+        assert isinstance(checks.items.get(check_fct), inspect.Signature)
 
 
 class TestHook:
     def test_construction(self):
         hooks = Modify[lambda x: x ** 2, lambda x: x - 2]
 
-        assert hooks.items[0](2) == 4
-        assert hooks.items[1](2) == 0
+        mod1, mod2 = hooks.items.keys()
+        assert mod1(2) == 4
+        assert mod2(2) == 0

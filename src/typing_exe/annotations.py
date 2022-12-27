@@ -1,4 +1,6 @@
-from typing import Union, Type
+import inspect
+from typing import Union, Type, Any
+from collections import OrderedDict
 
 import typing_exe as texe
 from typing_exe.early_return import EarlyReturn
@@ -14,21 +16,25 @@ class _PreProcess:
         if len(items) == 1 and texe.util.is_typehint(items[0]):
             return items[0], None
         if len(items) == 1 and callable(items[0]):
-            return None, items
+            return None, {items[0]: inspect.signature(items[0])}
         if len(items) > 1:
             typehint = None
             if texe.util.is_typehint(items[0]):
                 typehint = items[0]
                 items = items[1:]
 
-            items = [item for item in items if callable(item) and not texe.util.is_typehint(item)]
+            new_items = OrderedDict()
+            for item in items:
+                if callable(item) and not texe.util.is_typehint(item):
+                    new_items[item] = inspect.signature(item)
+            items = new_items
             items = None if not items else items   # Assume None or has entries in .enforce
             return typehint, items
 
         return None, None  # in case of complete nonsense
 
     @staticmethod
-    def execute_item(item: callable, parameter):
+    def execute_item(item: callable, signature: inspect.Signature, parameter: Any) -> Any:
         return item(parameter)
 
 
@@ -41,8 +47,8 @@ class _Assert(_PreProcess):
         if self.items is None or parameter is None:
             return
 
-        for check in self.items:
-            if not self.execute_item(check, parameter):
+        for item, signature in self.items.items():
+            if not self.execute_item(item, signature, parameter):
                 err_str = f"\nCheck failed! \n" \
                           f"\t- Callable: \n" \
                           f"\t\t- Name: {fct.__qualname__}\n" \
@@ -60,8 +66,8 @@ class _Modify(_PreProcess):
 
     def enforce(self, parameter):
         if self.items is not None:
-            for hook in self.items:
-                parameter = self.execute_item(hook, parameter)
+            for item, signature in self.items.items():
+                parameter = self.execute_item(item, signature, parameter)
                 if isinstance(parameter, EarlyReturn):
                     return parameter   # Value unpacked in @execute_annotations
 
