@@ -6,7 +6,7 @@ from typing import Union
 class TestChecks:
     def test_basic(self):
         @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Checks[int, lambda a: a < 5]):
+        def fct(a: texe.annotations.Assert[int, lambda a: a < 5]):
             return a
 
         assert fct(1) == 1
@@ -17,10 +17,10 @@ class TestChecks:
     def test_multiple(self):
         @texe.decorators.execute_annotations
         def fct(
-                a: texe.annotations.Checks[lambda a: a != 0, lambda a: a % 3 == 0],
+                a: texe.annotations.Assert[lambda a: a != 0, lambda a: a % 3 == 0],
                 b: int,
                 c,
-                d: texe.annotations.Checks[int] = None
+                d: texe.annotations.Assert[int] = None
         ):
             return a, b, c, d
 
@@ -35,7 +35,7 @@ class TestChecks:
 
     def test_typing(self):
         @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Checks[Union[int, float], lambda a: a != 0]):
+        def fct(a: texe.annotations.Assert[Union[int, float], lambda a: a != 0]):
             return a
 
         assert fct(1) == 1
@@ -45,7 +45,7 @@ class TestChecks:
 
     def test_return(self):
         @texe.decorators.execute_annotations
-        def faulty_abs(a: int) -> texe.annotations.Checks[lambda r: r >= 0]:
+        def faulty_abs(a: int) -> texe.annotations.Assert[lambda r: r >= 0]:
             return a
 
         assert faulty_abs(1) == 1
@@ -55,7 +55,7 @@ class TestChecks:
 
     def test_args_without_typehints(self):
         @texe.decorators.execute_annotations
-        def div(a, b: texe.annotations.Checks[lambda b: b != 0]):
+        def div(a, b: texe.annotations.Assert[lambda b: b != 0]):
             return a / b
 
         assert div(1, 1) == 1.
@@ -72,7 +72,7 @@ class TestChecks:
             return parameter
 
         @texe.decorators.execute_annotations
-        def div(a, b: texe.annotations.Hooks[float, none_to_one] = None):
+        def div(a, b: texe.annotations.Modify[float, none_to_one] = None):
             return a / b
 
         assert div(2., 2.) == 1.
@@ -84,7 +84,7 @@ class TestChecks:
 
     def test_with_star_args_fct(self):
         @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Checks[lambda a: a != 0], *args):
+        def fct(a: texe.annotations.Assert[lambda a: a != 0], *args):
             return a, *args
 
         assert fct(1, 2, 3, 4) == (1, 2, 3, 4)
@@ -101,7 +101,7 @@ class TestHooks:
             return (parameter + 1)**2
 
         @texe.decorators.execute_annotations
-        def fct(a: texe.annotations.Hooks[int, hookfct]) -> int:
+        def fct(a: texe.annotations.Modify[int, hookfct]) -> int:
             return a
 
         assert fct(1) == 4
@@ -112,7 +112,7 @@ class TestHooks:
 
     def test_returns(self):
         @texe.decorators.execute_annotations
-        def abs_fct(a: int) -> texe.annotations.Hooks[lambda a: abs(a)]:
+        def abs_fct(a: int) -> texe.annotations.Modify[lambda a: abs(a)]:
             return a
 
         assert abs_fct(1) == 1
@@ -125,9 +125,9 @@ class TestSequence:
         def foo(
                 a: texe.annotations.Sequence[
                     int,
-                    texe.annotations.Checks[lambda a: a != 0],
-                    texe.annotations.Hooks[lambda a: a + 1],
-                    texe.annotations.Checks[lambda a: a % 2 == 0]
+                    texe.annotations.Assert[lambda a: a != 0],
+                    texe.annotations.Modify[lambda a: a + 1],
+                    texe.annotations.Assert[lambda a: a % 2 == 0]
                 ]
         ):
             return a
@@ -151,8 +151,8 @@ class TestEarlyReturn:
         @texe.decorators.execute_annotations
         def foo(
                 a: texe.annotations.Sequence[
-                    texe.annotations.Hooks[none_to_one],
-                    texe.annotations.Checks[lambda a: a != 0]   # should never raise ValueError
+                    texe.annotations.Modify[none_to_one],
+                    texe.annotations.Assert[lambda a: a != 0]   # should never raise ValueError
                 ]
         ):
             return a + 1.   # Just to make sure that this isn't triggered when EarlyReturn is used
@@ -173,8 +173,8 @@ class TestEarlyReturn:
 
         @texe.decorators.execute_annotations
         def foo(
-                a: texe.annotations.Hooks[hook1] = texe.early_return.EarlyReturn(-1.), /   # to test if it works positional only
-        ) -> texe.annotations.Hooks[hook2]:
+                a: texe.annotations.Modify[hook1] = texe.early_return.EarlyReturn(-1.), /   # to test if it works positional only
+        ) -> texe.annotations.Modify[hook2]:
             return a + 1.
 
         assert foo() == -1.  # default EarlyReturn

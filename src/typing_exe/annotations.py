@@ -126,12 +126,12 @@ class _HintsCreator:
         return self._class()[item]
 
 
-Checks = _HintsCreator(_Assert)
-Checks.__doc__ = \
+Assert = _HintsCreator(_Assert)
+Assert.__doc__ = \
     """TODO"""
 
-Hooks = _HintsCreator(_Modify)
-Hooks.__doc__ = \
+Modify = _HintsCreator(_Modify)
+Modify.__doc__ = \
     """TODO"""
 
 Sequence = _HintsCreator(_Sequence)

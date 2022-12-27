@@ -7,17 +7,17 @@ def test_cleanup():
     @texe.decorators.cleanup_annotations
     @texe.decorators.execute_annotations
     def fct(
-            a: texe.annotations.Checks[lambda a: a > 0],
+            a: texe.annotations.Assert[lambda a: a > 0],
             b: float,
-            c: texe.annotations.Checks[int, lambda c: c != 0],
+            c: texe.annotations.Assert[int, lambda c: c != 0],
             d,
             e: Union[int, float],
             f: texe.annotations.Sequence[
                 int,
-                texe.annotations.Checks[lambda a: a != 0],
-                texe.annotations.Hooks[lambda a: a + 1]
+                texe.annotations.Assert[lambda a: a != 0],
+                texe.annotations.Modify[lambda a: a + 1]
             ]
-    ) -> texe.annotations.Hooks[int]:
+    ) -> texe.annotations.Modify[int]:
         return int(a + b + c + d + e + f)
 
     # Check that enforce works:

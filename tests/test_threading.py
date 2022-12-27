@@ -5,7 +5,7 @@ import pytest
 
 def test_checks_threaded():
     @texe.decorators.execute_annotations
-    def threaded_function(a: texe.annotations.Checks[lambda a: a != 0]):
+    def threaded_function(a: texe.annotations.Assert[lambda a: a != 0]):
         return a
 
     # Check if checks work non-threaded
@@ -20,7 +20,7 @@ def test_checks_threaded():
 def test_hooks_threaded():
     @texe.decorators.execute_annotations
     def threaded_function(
-            a: texe.annotations.Hooks[
+            a: texe.annotations.Modify[
                 lambda p: p + 1,
                 lambda p: p**2
             ]

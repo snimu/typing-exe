@@ -33,6 +33,6 @@ class _HintsCreator:
     def __getitem__(self, item) -> Union[_Assert, _Modify]: ...
 
 
-Checks: TypeAlias  = _HintsCreator(_Assert)
-Hooks: TypeAlias = _HintsCreator(_Modify)
+Assert: TypeAlias  = _HintsCreator(_Assert)
+Modify: TypeAlias = _HintsCreator(_Modify)
 Sequence: TypeAlias = _HintsCreator(_Sequence)
