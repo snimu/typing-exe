@@ -3,13 +3,13 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "parameter-checks"
-version = "1.0.0"
+name = "typing-exe"
+version = "0.0.1"
 authors = [{name="Sebastian Müller"}, {email="sebastian.nicolas.mueller@gmail.com"}]
-description = "Extend typehints to include dynamic checks (that might otherwise be dealt with by assertions) in Python."
-readme = "README-PyPI.md"
+description = "Executable typehints for Python: make assertions about and/or modify parameters & return values"
+readme = "README.md"
 requires-python = ">=3.8"
-keywords = ["parameters", "return-values", "checks", "types", "dynamic", "decorator", "typehint"]
+keywords = ["parameters", "return-value", "typing", "assert", "modify", "decorator", "typehint"]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -26,19 +26,18 @@ file = "LICENCE"
 
 
 [project.urls]
-repository = "https://github.com/snimu/parameter-checks"
-documentation = "https://github.com/snimu/parameter-checks#readme"
+repository = "https://github.com/snimu/typing-exe"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["parameter_checks*"]
+include = ["typing_exe*"]
 exclude = ["venv", "tests", ".*", "*.md"]
 
 [tool.coverage.run]
 source = ["src"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=parameter_checks"
+addopts = "--cov=typing_exe"
 testpaths = [
     "tests",
 ]

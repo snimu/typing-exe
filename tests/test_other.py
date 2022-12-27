@@ -1,5 +1,5 @@
-import parameter_checks as pc
+import typing_exe as texe
 
 
 def test_is_typehint():
-    assert not pc.annotations.is_typehint(None)
+    assert not texe.util.is_typehint(None)

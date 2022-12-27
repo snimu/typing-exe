@@ -1,12 +1,15 @@
 import pytest
-import parameter_checks as pc
 from typing import Union
+
+from typing_exe.decorators import execute_annotations
+from typing_exe.annotations import Assert, Modify, Sequence
+from typing_exe.early_return import EarlyReturn
 
 
 class TestChecks:
     def test_basic(self):
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Checks[int, lambda a: a < 5]):
+        @execute_annotations
+        def fct(a: Assert[int, lambda a: a < 5]):
             return a
 
         assert fct(1) == 1
@@ -15,12 +18,12 @@ class TestChecks:
             fct(5)
 
     def test_multiple(self):
-        @pc.hints.enforce
+        @execute_annotations
         def fct(
-                a: pc.annotations.Checks[lambda a: a != 0, lambda a: a%3 == 0],
+                a: Assert[lambda a: a != 0, lambda a: a % 3 == 0],
                 b: int,
                 c,
-                d: pc.annotations.Checks[int] = None
+                d: Assert[int] = None
         ):
             return a, b, c, d
 
@@ -34,8 +37,8 @@ class TestChecks:
             fct(1, 1, 1, 1)
 
     def test_typing(self):
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Checks[Union[int, float], lambda a: a != 0]):
+        @execute_annotations
+        def fct(a: Assert[Union[int, float], lambda a: a != 0]):
             return a
 
         assert fct(1) == 1
@@ -44,8 +47,8 @@ class TestChecks:
             fct(0)
 
     def test_return(self):
-        @pc.hints.enforce
-        def faulty_abs(a: int) -> pc.annotations.Checks[lambda r: r >= 0]:
+        @execute_annotations
+        def faulty_abs(a: int) -> Assert[lambda r: r >= 0]:
             return a
 
         assert faulty_abs(1) == 1
@@ -54,8 +57,8 @@ class TestChecks:
             faulty_abs(-1)
 
     def test_args_without_typehints(self):
-        @pc.hints.enforce
-        def div(a, b: pc.annotations.Checks[lambda b: b != 0]):
+        @execute_annotations
+        def div(a, b: Assert[lambda b: b != 0]):
             return a / b
 
         assert div(1, 1) == 1.
@@ -64,15 +67,15 @@ class TestChecks:
             div(1, 0)
 
     def test_with_default_value(self):
-        def none_to_one(fct, parameter, parameter_name, typehint):
+        def none_to_one(parameter):
             if parameter is not None:
-                assert type(parameter) is typehint
+                assert type(parameter) is float
 
             parameter = 1. if parameter is None else parameter
             return parameter
 
-        @pc.hints.enforce
-        def div(a, b: pc.annotations.Hooks[float, none_to_one] = None):
+        @execute_annotations
+        def div(a, b: Modify[float, none_to_one] = None):
             return a / b
 
         assert div(2., 2.) == 1.
@@ -83,8 +86,8 @@ class TestChecks:
             div(2., "not a float!")
 
     def test_with_star_args_fct(self):
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Checks[lambda a: a != 0], *args):
+        @execute_annotations
+        def fct(a: Assert[lambda a: a != 0], *args):
             return a, *args
 
         assert fct(1, 2, 3, 4) == (1, 2, 3, 4)
@@ -95,13 +98,13 @@ class TestChecks:
 
 class TestHooks:
     def test_basic(self):
-        def hookfct(fct, parameter, parameter_name, typehint):
+        def hookfct(parameter):
             if parameter == 0:
                 raise ValueError("Hook failed!")
             return (parameter + 1)**2
 
-        @pc.hints.enforce
-        def fct(a: pc.annotations.Hooks[int, hookfct]) -> int:
+        @execute_annotations
+        def fct(a: Modify[int, hookfct]) -> int:
             return a
 
         assert fct(1) == 4
@@ -111,12 +114,73 @@ class TestHooks:
             fct(0)
 
     def test_returns(self):
-        def hookfct(fct, parameter, parameter_name, typehint):
-            return abs(parameter)
-
-        @pc.hints.enforce
-        def abs_fct(a: int) -> pc.annotations.Hooks[hookfct]:
+        @execute_annotations
+        def abs_fct(a: int) -> Modify[lambda a: abs(a)]:
             return a
 
         assert abs_fct(1) == 1
         assert abs_fct(-1) == 1
+
+
+class TestSequence:
+    def test_base(self):
+        @execute_annotations
+        def foo(
+                a: Sequence[
+                    int,
+                    Assert[lambda a: a != 0],
+                    Modify[lambda a: a + 1],
+                    Assert[lambda a: a % 2 == 0]
+                ]
+        ):
+            return a
+
+        assert foo(1) == 2
+
+        with pytest.raises(ValueError):
+            foo(0)   # fails first check
+
+        with pytest.raises(ValueError):
+            foo(2)   # fails second check
+
+
+class TestEarlyReturn:
+    def test_base(self):
+        def none_to_one(parameter):
+            if parameter == 0.:
+                return EarlyReturn(0.)   # just to check that the Check isn't triggered
+            return parameter
+
+        @execute_annotations
+        def foo(
+                a: Sequence[
+                    Modify[none_to_one],
+                    Assert[lambda a: a != 0]   # should never raise ValueError
+                ]
+        ):
+            return a + 1.   # Just to make sure that this isn't triggered when EarlyReturn is used
+
+        assert foo(1.) == 2.
+        assert foo(0.) == 0.
+
+    def test_in_different_positions(self):
+        def hook1(p):
+            if p == 0.:
+                return EarlyReturn(0.)
+            return p
+
+        def hook2(p):
+            if p == 2.:
+                return EarlyReturn(4.)   # To see if calculation happens after function body
+            return p
+
+        @execute_annotations
+        def foo(
+                a: Modify[hook1] = EarlyReturn(-1.), /   # to test if it works positional only
+        ) -> Modify[hook2]:
+            return a + 1.
+
+        assert foo() == -1.  # default EarlyReturn
+        assert foo(0.) == 0.   # EarlyReturn from hook1
+        assert foo(1.) == 4.   # EarlyReturn from hook2 (1. after hook1; 2. after fct body; 4. after hook2)
+        assert foo(2.) == 3.   # regular function

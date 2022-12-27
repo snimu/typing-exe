@@ -1,28 +1,38 @@
 from typing import Union
 import pytest
-import parameter_checks as pc
+
+from typing_exe.annotations import Assert, Sequence, Modify
+from typing_exe.decorators import execute_annotations, cleanup_annotations
 
 
 def test_cleanup():
-    @pc.hints.cleanup
-    @pc.hints.enforce
+    @cleanup_annotations
+    @execute_annotations
     def fct(
-            a: pc.annotations.Checks[lambda a: a > 0],
+            a: Assert[lambda a: a > 0],
             b: float,
-            c: pc.annotations.Checks[int, lambda c: c != 0],
+            c: Assert[int, lambda c: c != 0],
             d,
-            e: Union[int, float]
-    ) -> pc.annotations.Hooks[int]:
-        return int(a + b + c + d + e)
+            e: Union[int, float],
+            f: Sequence[
+                int,
+                Assert[lambda a: a != 0],
+                Modify[lambda a: a + 1]
+            ]
+    ) -> Modify[int]:
+        return int(a + b + c + d + e + f)
 
     # Check that enforce works:
-    assert fct(1, 1, 1, 1, 1) == 5
+    assert fct(1, 1, 1, 1, 1, 1) == 7
 
     with pytest.raises(ValueError):
-        fct(0, 1, 1, 1, 1)
+        fct(0, 1, 1, 1, 1, 1)
 
     with pytest.raises(ValueError):
-        fct(1, 1, 0, 1, 1)
+        fct(1, 1, 0, 1, 1, 1)
+
+    with pytest.raises(ValueError):
+        fct(1, 1, 1, 1, 1, 0)
 
     # Check that annotations are fine
-    assert fct.__annotations__ == {"b": float, "c": int, "e": Union[int, float], "return": int}
+    assert fct.__annotations__ == {"b": float, "c": int, "e": Union[int, float], "f": int, "return": int}

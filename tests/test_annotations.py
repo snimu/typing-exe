@@ -1,55 +1,61 @@
 import typing
-import parameter_checks as pc
+import pytest
+
+from typing_exe.annotations import Assert, Modify
 
 
 class TestChecks:
     def test_construction(self):
         def check_fct(a):
             return a < 1
-        checks = pc.annotations.Checks[int, check_fct]
-        assert checks.checks == [check_fct]
+        checks = Assert[int, check_fct]
+        assert checks.items == [check_fct]
         assert checks.typehint is int
 
     def test_construction_invalid_inputs(self):
         for inputs in ((1, ), (1, 2, 3)):
-            checks = pc.annotations.Checks[inputs]
-            assert checks.checks is None
+            checks = Assert[inputs]
+            assert checks.items is None
             assert checks.typehint is None
 
     def test_construction_just_type(self):
-        checks = pc.annotations.Checks[int]
-        assert checks.checks is None
+        checks = Assert[int]
+        assert checks.items is None
         assert checks.typehint is int
 
     def test_construction_just_checks(self):
         def check_fct(a):
             return a < 1
 
-        checks = pc.annotations.Checks[check_fct]
-        assert checks.checks == (check_fct, )
+        checks = Assert[check_fct]
+        assert checks.items == (check_fct,)
         assert checks.typehint is None
 
     def test_construction_empty(self):
-        checks = pc.annotations.Checks
-        assert checks.checks is None
-        assert checks.typehint is None
+        checks = Assert
+
+        with pytest.raises(AttributeError):
+            items = checks.items
+
+        with pytest.raises(AttributeError):
+            checks.items = 1
 
     def test_construction_multiple_typehints_in_checks(self):
         def check_fct(a):
             return a != 0
 
-        checks = pc.annotations.Checks[
+        checks = Assert[
             int, typing.Union[int, float], typing.Tuple[int, int],
             check_fct
         ]
 
         assert checks.typehint is int
-        assert checks.checks == [check_fct]
+        assert checks.items == [check_fct]
 
 
 class TestHook:
     def test_construction(self):
-        hooks = pc.annotations.Hooks[lambda x: x**2, lambda x: x - 2]
+        hooks = Modify[lambda x: x ** 2, lambda x: x - 2]
 
-        assert hooks.hooks[0](2) == 4
-        assert hooks.hooks[1](2) == 0
+        assert hooks.items[0](2) == 4
+        assert hooks.items[1](2) == 0
