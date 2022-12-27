@@ -4,38 +4,38 @@ import typing_exe as texe
 from typing_exe.early_return import EarlyReturn
 
 
-def parse(values):
+def parse(items):
     # Checks is never empty because this eventuality
     #   is caught by _HintsCreator
-    if not isinstance(values, tuple):
-        values = (values,)
-    if len(values) == 1 and texe.util.is_typehint(values[0]):
-        return values[0], None
-    if len(values) == 1 and callable(values[0]):
-        return None, values
-    if len(values) > 1:
+    if not isinstance(items, tuple):
+        items = (items,)
+    if len(items) == 1 and texe.util.is_typehint(items[0]):
+        return items[0], None
+    if len(items) == 1 and callable(items[0]):
+        return None, items
+    if len(items) > 1:
         typehint = None
-        if texe.util.is_typehint(values[0]):
-            typehint = values[0]
-            values = values[1:]
+        if texe.util.is_typehint(items[0]):
+            typehint = items[0]
+            items = items[1:]
 
-        values = [value for value in values if callable(value) and not texe.util.is_typehint(value)]
-        values = None if not values else values   # Assume None or has entries in .enforce
-        return typehint, values
+        items = [item for item in items if callable(item) and not texe.util.is_typehint(item)]
+        items = None if not items else items   # Assume None or has entries in .enforce
+        return typehint, items
 
     return None, None  # in case of complete nonsense
 
 
 class _Assert:
-    def __getitem__(self, checks):
-        self.typehint, self.checks = parse(checks)
+    def __getitem__(self, items):
+        self.typehint, self.items = parse(items)
         return self
 
     def enforce(self, fct, parameter, parameter_name):
-        if self.checks is None or parameter is None:
+        if self.items is None or parameter is None:
             return
 
-        for check in self.checks:
+        for check in self.items:
             if not check(parameter):
                 err_str = f"\nCheck failed! \n" \
                           f"\t- Callable: \n" \
@@ -48,13 +48,13 @@ class _Assert:
 
 
 class _Modify:
-    def __getitem__(self, hooks):
-        self.typehint, self.hooks = parse(hooks)
+    def __getitem__(self, items):
+        self.typehint, self.items = parse(items)
         return self
 
     def enforce(self, parameter):
-        if self.hooks is not None:
-            for hook in self.hooks:
+        if self.items is not None:
+            for hook in self.items:
                 parameter = hook(parameter)
                 if isinstance(parameter, EarlyReturn):
                     return parameter   # Value unpacked in @pc.hints.enforce
@@ -63,12 +63,12 @@ class _Modify:
 
 
 class _Sequence:
-    def __getitem__(self, hints):
-        self.typehint, self.hints = self.parse(hints)
+    def __getitem__(self, items):
+        self.typehint, self.items = self.parse(items)
         return self
 
     def enforce(self, fct, parameter, parameter_name):
-        for hint in self.hints:
+        for hint in self.items:
             if isinstance(hint, _Assert):
                 hint.enforce(fct, parameter, parameter_name)
             elif isinstance(hint, _Modify):
@@ -78,24 +78,24 @@ class _Sequence:
 
         return parameter
 
-    def parse(self, hints):
+    def parse(self, items):
         # hints is never empty because this eventuality
         #   is caught by _HintsCreator
-        if not isinstance(hints, tuple):
-            hints = (hints,)
-        if len(hints) == 1 and texe.util.is_typehint(hints[0]):
-            return hints[0], None
-        if len(hints) == 1 and self.is_checks_or_hooks(hints[0]):
-            return None, hints
-        if len(hints) > 1:
+        if not isinstance(items, tuple):
+            items = (items,)
+        if len(items) == 1 and texe.util.is_typehint(items[0]):
+            return items[0], None
+        if len(items) == 1 and self.is_checks_or_hooks(items[0]):
+            return None, items
+        if len(items) > 1:
             typehint = None
-            if texe.util.is_typehint(hints[0]):
-                typehint = hints[0]
-                hints = hints[1:]
+            if texe.util.is_typehint(items[0]):
+                typehint = items[0]
+                items = items[1:]
 
-            hints = [hint for hint in hints if self.is_checks_or_hooks(hint)]
-            hints = None if not hints else hints  # Assume None or has entries in .enforce
-            return typehint, hints
+            items = [item for item in items if self.is_checks_or_hooks(item)]
+            items = None if not items else items  # Assume None or has entries in .enforce
+            return typehint, items
 
         return None, None  # in case of complete nonsense
 
