@@ -5,7 +5,7 @@ from functools import wraps
 import typing_exe as texe
 
 
-def enforce(fct):
+def execute_annotations(fct):
     signature = inspect.signature(fct)
     argdata, kwargdata, defaultdata, pnames = _get_data(signature)
 

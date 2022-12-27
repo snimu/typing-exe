@@ -5,7 +5,7 @@ from typing import Union
 
 class TestChecks:
     def test_basic(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def fct(a: texe.annotations.Checks[int, lambda a: a < 5]):
             return a
 
@@ -15,7 +15,7 @@ class TestChecks:
             fct(5)
 
     def test_multiple(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def fct(
                 a: texe.annotations.Checks[lambda a: a != 0, lambda a: a % 3 == 0],
                 b: int,
@@ -34,7 +34,7 @@ class TestChecks:
             fct(1, 1, 1, 1)
 
     def test_typing(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def fct(a: texe.annotations.Checks[Union[int, float], lambda a: a != 0]):
             return a
 
@@ -44,7 +44,7 @@ class TestChecks:
             fct(0)
 
     def test_return(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def faulty_abs(a: int) -> texe.annotations.Checks[lambda r: r >= 0]:
             return a
 
@@ -54,7 +54,7 @@ class TestChecks:
             faulty_abs(-1)
 
     def test_args_without_typehints(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def div(a, b: texe.annotations.Checks[lambda b: b != 0]):
             return a / b
 
@@ -71,7 +71,7 @@ class TestChecks:
             parameter = 1. if parameter is None else parameter
             return parameter
 
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def div(a, b: texe.annotations.Hooks[float, none_to_one] = None):
             return a / b
 
@@ -83,7 +83,7 @@ class TestChecks:
             div(2., "not a float!")
 
     def test_with_star_args_fct(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def fct(a: texe.annotations.Checks[lambda a: a != 0], *args):
             return a, *args
 
@@ -100,7 +100,7 @@ class TestHooks:
                 raise ValueError("Hook failed!")
             return (parameter + 1)**2
 
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def fct(a: texe.annotations.Hooks[int, hookfct]) -> int:
             return a
 
@@ -111,7 +111,7 @@ class TestHooks:
             fct(0)
 
     def test_returns(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def abs_fct(a: int) -> texe.annotations.Hooks[lambda a: abs(a)]:
             return a
 
@@ -121,7 +121,7 @@ class TestHooks:
 
 class TestSequence:
     def test_base(self):
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def foo(
                 a: texe.annotations.Sequence[
                     int,
@@ -148,7 +148,7 @@ class TestEarlyReturn:
                 return texe.early_return.EarlyReturn(0.)   # just to check that the Check isn't triggered
             return parameter
 
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def foo(
                 a: texe.annotations.Sequence[
                     texe.annotations.Hooks[none_to_one],
@@ -171,7 +171,7 @@ class TestEarlyReturn:
                 return texe.early_return.EarlyReturn(4.)   # To see if calculation happens after function body
             return p
 
-        @texe.decorators.enforce
+        @texe.decorators.execute_annotations
         def foo(
                 a: texe.annotations.Hooks[hook1] = texe.early_return.EarlyReturn(-1.), /   # to test if it works positional only
         ) -> texe.annotations.Hooks[hook2]:

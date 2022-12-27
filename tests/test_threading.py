@@ -4,7 +4,7 @@ import pytest
 
 
 def test_checks_threaded():
-    @texe.decorators.enforce
+    @texe.decorators.execute_annotations
     def threaded_function(a: texe.annotations.Checks[lambda a: a != 0]):
         return a
 
@@ -18,7 +18,7 @@ def test_checks_threaded():
         executor.map(threaded_function, range(1, 31))
 
 def test_hooks_threaded():
-    @texe.decorators.enforce
+    @texe.decorators.execute_annotations
     def threaded_function(
             a: texe.annotations.Hooks[
                 lambda p: p + 1,
