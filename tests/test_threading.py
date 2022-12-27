@@ -21,8 +21,8 @@ def test_hooks_threaded():
     @texe.hints.enforce
     def threaded_function(
             a: texe.annotations.Hooks[
-                lambda f, p, pn, t: p + 1,
-                lambda f, p, pn, t: p**2
+                lambda p: p + 1,
+                lambda p: p**2
             ]
     ):
         return a

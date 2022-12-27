@@ -2,6 +2,9 @@ from typing import Union, Type
 import typing
 
 
+from typing_exe.early_return import EarlyReturn
+
+
 def is_typehint(value) -> bool:
     if type(value) is type:
         return True
@@ -14,7 +17,7 @@ def is_typehint(value) -> bool:
 
 def parse(values):
     # Checks is never empty because this eventuality
-    #   is caught by _ChecksCreator
+    #   is caught by _HintsCreator
     if not isinstance(values, tuple):
         values = (values,)
     if len(values) == 1 and is_typehint(values[0]):
@@ -68,16 +71,64 @@ class _Hooks:
         self.typehint, self.hooks = parse(hooks)
         return self
 
-    def enforce(self, fct, parameter, parameter_name):
+    def enforce(self, parameter):
         if self.hooks is not None:
             for hook in self.hooks:
-                parameter = hook(fct, parameter, parameter_name, self.typehint)
+                parameter = hook(parameter)
+                if isinstance(parameter, EarlyReturn):
+                    return parameter   # Value unpacked in @pc.hints.enforce
 
         return parameter
 
 
+class _Sequence:
+    def __init__(self):
+        self.typehint = None
+        self.hints = None
+
+    def __getitem__(self, hints):
+        self.typehint, self.hints = self.parse(hints)
+        return self
+
+    def enforce(self, fct, parameter, parameter_name):
+        for hint in self.hints:
+            if isinstance(hint, _Checks):
+                hint.enforce(fct, parameter, parameter_name)
+            elif isinstance(hint, _Hooks):
+                parameter = hint.enforce(parameter)
+                if isinstance(parameter, EarlyReturn):
+                    return parameter   # Value unpacked in @pc.hints.enforce
+
+        return parameter
+
+    def parse(self, hints):
+        # hints is never empty because this eventuality
+        #   is caught by _HintsCreator
+        if not isinstance(hints, tuple):
+            hints = (hints,)
+        if len(hints) == 1 and is_typehint(hints[0]):
+            return hints[0], None
+        if len(hints) == 1 and self.is_checks_or_hooks(hints[0]):
+            return None, hints
+        if len(hints) > 1:
+            typehint = None
+            if is_typehint(hints[0]):
+                typehint = hints[0]
+                hints = hints[1:]
+
+            hints = [hint for hint in hints if self.is_checks_or_hooks(hint)]
+            hints = None if not hints else hints  # Assume None or has entries in .enforce
+            return typehint, hints
+
+        return None, None  # in case of complete nonsense
+
+    @staticmethod
+    def is_checks_or_hooks(item):
+        return isinstance(item, _Checks) or isinstance(item, _Hooks)
+
+
 class _HintsCreator:
-    def __init__(self, _class: Union[Type[_Checks], Type[_Hooks]]):
+    def __init__(self, _class: Union[Type[_Checks], Type[_Hooks], Type[_Sequence]]):
         self._class = _class
         self.typehint = None
         self.checks = None
@@ -92,4 +143,8 @@ Checks.__doc__ = \
 
 Hooks = _HintsCreator(_Hooks)
 Hooks.__doc__ = \
+    """TODO"""
+
+Sequence = _HintsCreator(_Sequence)
+Sequence.__doc__ = \
     """TODO"""

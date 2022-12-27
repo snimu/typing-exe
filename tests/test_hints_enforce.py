@@ -64,9 +64,9 @@ class TestChecks:
             div(1, 0)
 
     def test_with_default_value(self):
-        def none_to_one(fct, parameter, parameter_name, typehint):
+        def none_to_one(parameter):
             if parameter is not None:
-                assert type(parameter) is typehint
+                assert type(parameter) is float
 
             parameter = 1. if parameter is None else parameter
             return parameter
@@ -95,7 +95,7 @@ class TestChecks:
 
 class TestHooks:
     def test_basic(self):
-        def hookfct(fct, parameter, parameter_name, typehint):
+        def hookfct(parameter):
             if parameter == 0:
                 raise ValueError("Hook failed!")
             return (parameter + 1)**2
@@ -111,12 +111,73 @@ class TestHooks:
             fct(0)
 
     def test_returns(self):
-        def hookfct(fct, parameter, parameter_name, typehint):
-            return abs(parameter)
-
         @texe.hints.enforce
-        def abs_fct(a: int) -> texe.annotations.Hooks[hookfct]:
+        def abs_fct(a: int) -> texe.annotations.Hooks[lambda a: abs(a)]:
             return a
 
         assert abs_fct(1) == 1
         assert abs_fct(-1) == 1
+
+
+class TestSequence:
+    def test_base(self):
+        @texe.hints.enforce
+        def foo(
+                a: texe.annotations.Sequence[
+                    int,
+                    texe.annotations.Checks[lambda a: a != 0],
+                    texe.annotations.Hooks[lambda a: a + 1],
+                    texe.annotations.Checks[lambda a: a % 2 == 0]
+                ]
+        ):
+            return a
+
+        assert foo(1) == 2
+
+        with pytest.raises(ValueError):
+            foo(0)   # fails first check
+
+        with pytest.raises(ValueError):
+            foo(2)   # fails second check
+
+
+class TestEarlyReturn:
+    def test_base(self):
+        def none_to_one(parameter):
+            if parameter == 0.:
+                return texe.early_return.EarlyReturn(0.)   # just to check that the Check isn't triggered
+            return parameter
+
+        @texe.hints.enforce
+        def foo(
+                a: texe.annotations.Sequence[
+                    texe.annotations.Hooks[none_to_one],
+                    texe.annotations.Checks[lambda a: a != 0]   # should never raise ValueError
+                ]
+        ):
+            return a + 1.   # Just to make sure that this isn't triggered when EarlyReturn is used
+
+        assert foo(1.) == 2.
+        assert foo(0.) == 0.
+
+    def test_in_different_positions(self):
+        def hook1(p):
+            if p == 0.:
+                return texe.early_return.EarlyReturn(0.)
+            return p
+
+        def hook2(p):
+            if p == 2.:
+                return texe.early_return.EarlyReturn(4.)   # To see if calculation happens after function body
+            return p
+
+        @texe.hints.enforce
+        def foo(
+                a: texe.annotations.Hooks[hook1] = texe.early_return.EarlyReturn(-1.), /   # to test if it works positional only
+        ) -> texe.annotations.Hooks[hook2]:
+            return a + 1.
+
+        assert foo() == -1.  # default EarlyReturn
+        assert foo(0.) == 0.   # EarlyReturn from hook1
+        assert foo(1.) == 4.   # EarlyReturn from hook2 (1. after hook1; 2. after fct body; 4. after hook2)
+        assert foo(2.) == 3.   # regular function
