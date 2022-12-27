@@ -111,6 +111,24 @@ class _HintsCreator:
     def __getitem__(self, item) -> Union[_Assert, _Modify]:
         return self._class()[item]
 
+    @property
+    def items(self):
+        raise AttributeError(
+            "'_HintsCreator' object has no attribute 'items'; "
+            "Always use 'Assert', 'Modify', and 'Sequence' "
+            "with their '__getitem__'-method "
+            "('Assert[...]', 'Modify[...]', 'Sequence[...]')"
+        )
+
+    @items.setter
+    def items(self, item):
+        raise AttributeError(
+            "'_HintsCreator' object has no attribute 'items'; "
+            "Always use 'Assert', 'Modify', and 'Sequence' "
+            "with their '__getitem__'-method "
+            "('Assert[...]', 'Modify[...]', 'Sequence[...]')"
+        )
+
 
 Assert = _HintsCreator(_Assert)
 Assert.__doc__ = \

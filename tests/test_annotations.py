@@ -1,4 +1,7 @@
 import typing
+
+import pytest
+
 import typing_exe as texe
 
 
@@ -28,11 +31,15 @@ class TestChecks:
         checks = texe.annotations.Assert[check_fct]
         assert checks.items == (check_fct,)
         assert checks.typehint is None
-    #
-    # def test_construction_empty(self):
-    #     checks = texe.annotations.Assert
-    #     assert checks.checks is None
-    #     assert checks.typehint is None
+
+    def test_construction_empty(self):
+        checks = texe.annotations.Assert
+
+        with pytest.raises(AttributeError):
+            items = checks.items
+
+        with pytest.raises(AttributeError):
+            checks.items = 1
 
     def test_construction_multiple_typehints_in_checks(self):
         def check_fct(a):
