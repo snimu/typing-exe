@@ -1,18 +1,7 @@
 from typing import Union, Type
-import typing
 
-
+import typing_exe as texe
 from typing_exe.early_return import EarlyReturn
-
-
-def is_typehint(value) -> bool:
-    if type(value) is type:
-        return True
-
-    # Can also be from typing module
-    name_with_brackets = str(value).split(".")[-1]  # Might be Union or Union[float, int]
-    name = name_with_brackets.split("[")[0]  # Now just Union (etc.)
-    return name in typing.__all__
 
 
 def parse(values):
@@ -20,17 +9,17 @@ def parse(values):
     #   is caught by _HintsCreator
     if not isinstance(values, tuple):
         values = (values,)
-    if len(values) == 1 and is_typehint(values[0]):
+    if len(values) == 1 and texe.util.is_typehint(values[0]):
         return values[0], None
     if len(values) == 1 and callable(values[0]):
         return None, values
     if len(values) > 1:
         typehint = None
-        if is_typehint(values[0]):
+        if texe.util.is_typehint(values[0]):
             typehint = values[0]
             values = values[1:]
 
-        values = [value for value in values if callable(value) and not is_typehint(value)]
+        values = [value for value in values if callable(value) and not texe.util.is_typehint(value)]
         values = None if not values else values   # Assume None or has entries in .enforce
         return typehint, values
 
@@ -106,13 +95,13 @@ class _Sequence:
         #   is caught by _HintsCreator
         if not isinstance(hints, tuple):
             hints = (hints,)
-        if len(hints) == 1 and is_typehint(hints[0]):
+        if len(hints) == 1 and texe.util.is_typehint(hints[0]):
             return hints[0], None
         if len(hints) == 1 and self.is_checks_or_hooks(hints[0]):
             return None, hints
         if len(hints) > 1:
             typehint = None
-            if is_typehint(hints[0]):
+            if texe.util.is_typehint(hints[0]):
                 typehint = hints[0]
                 hints = hints[1:]
 

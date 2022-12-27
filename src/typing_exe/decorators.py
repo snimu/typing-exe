@@ -53,7 +53,7 @@ def execute_annotations(fct):
         # Return value
         returns = fct(*args, **kwargs)
         if signature.return_annotation != inspect.Parameter.empty \
-                and is_package_annotation(signature.return_annotation):
+                and texe.util.is_package_annotation(signature.return_annotation):
             returns = _enforce_annotation(returns, "return", signature.return_annotation, fct)
             returns = returns.returns if isinstance(returns, texe.early_return.EarlyReturn) else returns
 
@@ -82,7 +82,7 @@ def _get_data(signature):
         annotation = signature.parameters.get(pname).annotation
 
         # Save other data only if it's an annotation
-        if not is_package_annotation(annotation):
+        if not texe.util.is_package_annotation(annotation):
             continue
 
         # Save argdata and kwargdata
@@ -93,15 +93,6 @@ def _get_data(signature):
             argdata[i] = annotation
 
     return argdata, kwargdata, defaultdata, pnames
-
-
-def is_package_annotation(annotation):
-    annotations = [
-        texe.annotations._Checks,
-        texe.annotations._Hooks,
-        texe.annotations._Sequence
-    ]
-    return type(annotation) in annotations
 
 
 def _enforce_annotation(parameter, parameter_name, annotation, fct):
@@ -125,9 +116,9 @@ def cleanup_annotations(fct):
     for parameter, typehint in fct.__annotations__.items():
         if typehint is None:
             continue
-        if texe.annotations.is_typehint(typehint):
+        if texe.util.is_typehint(typehint):
             new_annotations[parameter] = typehint
-        elif is_package_annotation(typehint) \
+        elif texe.util.is_package_annotation(typehint) \
                 and typehint.typehint is not None:   # if it's not None, parse made sure that it's a typehint!
             new_annotations[parameter] = typehint.typehint
 
