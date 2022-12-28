@@ -47,6 +47,7 @@ class _PreProcess:
             return item(parameter)
 
         # More than one parameter to Assert- or Modify-item -> compare with other parameters
+        # Assume that first parameter to item is annotated parameter
         other_parameter_names = list(item_signature.parameters.keys())[1:]
         other_parameters = []
         for pname in other_parameter_names:
