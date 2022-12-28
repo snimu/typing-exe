@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 import typing_exe as texe
 from typing_exe.early_return import EarlyReturn
+from typing_exe.parameter_data import ParameterData
 
 
 class _PreProcess:
@@ -38,10 +39,9 @@ class _PreProcess:
             item: callable,
             signature: inspect.Signature,
             parameter: Any,
-            defaultdata,
             args,
             kwargs,
-            index_at_argname
+            pdata: ParameterData
     ) -> Any:
         if len(signature.parameters) == 1:
             return item(parameter)
@@ -52,10 +52,10 @@ class _PreProcess:
         for pname in other_parameter_names:
             if pname in kwargs.keys():
                 other_parameters.append(kwargs.get(pname))
-            elif pname in index_at_argname.keys() and index_at_argname.get(pname) < len(args):
-                other_parameters.append(args[index_at_argname.get(pname)])
-            elif pname in defaultdata.keys():
-                other_parameters.append(defaultdata.get(pname).get("value"))
+            elif pname in pdata.index_from_argname.keys() and pdata.index_from_argname.get(pname) < len(args):
+                other_parameters.append(args[pdata.index_from_argname.get(pname)])
+            elif pname in pdata.defaultdata.keys():
+                other_parameters.append(pdata.defaultdata.get(pname).get("value"))
             else:
                 raise ValueError(
                     f"Parameter {pname} does not exist!"   # TODO: better error
@@ -70,13 +70,13 @@ class _Assert(_PreProcess):
         self.typehint, self.items = self.parse_getitem(items)
         return self
 
-    def enforce(self, fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname):
+    def enforce(self, fct, parameter, parameter_name, args, kwargs, pdata: ParameterData):
         if self.items is None or parameter is None:
             return parameter
 
         for item, signature in self.items.items():
             if not self.execute_item(
-                    item, signature, parameter, defaultdata, args, kwargs, index_at_argname
+                    item, signature, parameter, args, kwargs, pdata
             ):
                 err_str = f"\nCheck failed! \n" \
                           f"\t- Callable: \n" \
@@ -98,11 +98,11 @@ class _Modify(_PreProcess):
         self.typehint, self.items = self.parse_getitem(items)
         return self
 
-    def enforce(self, fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname):
+    def enforce(self, fct, parameter, parameter_name, args, kwargs, pdata: ParameterData):
         if self.items is not None:
             for item, signature in self.items.items():
                 parameter = self.execute_item(
-                    item, signature, parameter, defaultdata, args, kwargs, index_at_argname
+                    item, signature, parameter, args, kwargs, pdata
                 )
                 if isinstance(parameter, EarlyReturn):
                     return parameter   # Value unpacked in @execute_annotations
@@ -115,9 +115,9 @@ class _Sequence:
         self.typehint, self.items = self.parse(items)
         return self
 
-    def enforce(self, fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname):
+    def enforce(self, fct, parameter, parameter_name, args, kwargs, pdata: ParameterData):
         for item in self.items:
-            parameter = item.enforce(fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname)
+            parameter = item.enforce(fct, parameter, parameter_name, args, kwargs, pdata)
             if isinstance(parameter, EarlyReturn):
                 return parameter   # Value unpacked in @execute_annotations
 
