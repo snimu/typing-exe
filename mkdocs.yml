@@ -1,8 +1,8 @@
 site_name: typeing-exe
 
 nav:
-    - Home: index.md
-    - Quickstart: quickstart.md
+    - Home: index.rst
+    - Quickstart: quickstart.rst
     - typing-exe:
         - annotations:
             - Assert: 'typing-exe/annotations/Assert.md'
