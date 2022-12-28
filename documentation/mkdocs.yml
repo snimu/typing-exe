@@ -14,5 +14,5 @@ nav:
         - early_return: 
             - EarlyReturn: 'typing-exe/early_return/EarlyReturn.md'
         - parameter_data:
-            - ParameterData: 'typing-exe/parameter_data/ParameterData.md'q
+            - ParameterData: 'typing-exe/parameter_data/ParameterData.md'
 theme: readthedocs
