@@ -37,17 +37,17 @@ class _PreProcess:
     @staticmethod
     def execute_item(
             item: callable,
-            signature: inspect.Signature,
+            item_signature: inspect.Signature,
             parameter: Any,
             args,
             kwargs,
             pdata: ParameterData
     ) -> Any:
-        if len(signature.parameters) == 1:
+        if len(item_signature.parameters) == 1:
             return item(parameter)
 
         # More than one parameter to Assert- or Modify-item -> compare with other parameters
-        other_parameter_names = list(signature.parameters.keys())[1:]
+        other_parameter_names = list(item_signature.parameters.keys())[1:]
         other_parameters = []
         for pname in other_parameter_names:
             if pname in kwargs.keys():
@@ -74,11 +74,11 @@ class _Assert(_PreProcess):
         if self.items is None or parameter is None:
             return parameter
 
-        for item, signature in self.items.items():
+        for item, item_signature in self.items.items():
             if not self.execute_item(
-                    item, signature, parameter, args, kwargs, pdata
+                    item, item_signature, parameter, args, kwargs, pdata
             ):
-                err_str = f"\nCheck failed! \n" \
+                err_str = f"\nAssert failed! \n" \
                           f"\t- Callable: \n" \
                           f"\t\t- Name: {fct.__qualname__}\n" \
                           f"\t\t- Module: {fct.__module__}\n" \

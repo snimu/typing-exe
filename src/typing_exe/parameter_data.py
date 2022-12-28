@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass
 class ParameterData:
-    signature: inspect.Signature
+    function_signature: inspect.Signature
     arg_annotations: dict
     argname_from_index: dict
     index_from_argname: dict

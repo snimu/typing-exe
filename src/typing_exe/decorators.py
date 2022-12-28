@@ -25,7 +25,7 @@ def execute_annotations(fct):
             # If the default-value is not an instance of EarlyReturn,
             #   add it to args or kwargs (depending on what fits better)
             #   to have it checked below
-            if pdata.signature.parameters.get(pname).kind == inspect.Parameter.POSITIONAL_ONLY:
+            if pdata.function_signature.parameters.get(pname).kind == inspect.Parameter.POSITIONAL_ONLY:
                 args.append(pdata.defaultdata.get(pname).get("value"))
             else:
                 kwargs[pname] = pdata.defaultdata.get(pname).get("value")
@@ -64,9 +64,9 @@ def execute_annotations(fct):
 
         # Return value
         returns = fct(*args, **kwargs)
-        if pdata.signature.return_annotation != inspect.Parameter.empty \
-                and texe.util.is_package_annotation(pdata.signature.return_annotation):
-            returns = pdata.signature.return_annotation.enforce(
+        if pdata.function_signature.return_annotation != inspect.Parameter.empty \
+                and texe.util.is_package_annotation(pdata.function_signature.return_annotation):
+            returns = pdata.function_signature.return_annotation.enforce(
                 fct=fct,
                 parameter=returns,
                 parameter_name="return",
@@ -115,7 +115,7 @@ def _get_data(fct):
             arg_annotations[i] = annotation
 
     pdata = texe.parameter_data.ParameterData(
-        signature=signature,
+        function_signature=signature,
         arg_annotations=arg_annotations,
         argname_from_index=argname_from_index,
         index_from_argname=index_from_argname,
