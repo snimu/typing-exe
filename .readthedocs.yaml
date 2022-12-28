@@ -6,4 +6,4 @@ mkdocs:
 
 python:
   install:
-    - mkdocs==1.4.2
+    - requirements: requirements-dev.txt
