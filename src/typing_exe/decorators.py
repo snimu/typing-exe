@@ -1,60 +1,79 @@
 import inspect
 from functools import wraps
-
 import typing_exe as texe
 
 
 def execute_annotations(fct):
-    signature = inspect.signature(fct)
-    argdata, kwargdata, defaultdata, pnames = _get_data(signature)
+    pdata = _get_data(fct)
 
     @wraps(fct)
     def _run(*args, **kwargs):
         args = list(args)   # So that they can be changed
 
         # Defaults
-        for pname in defaultdata.keys():
+        for pname in pdata.defaultdata.keys():
             # Don't touch anything that is in args or kwargs
             if pname in kwargs:
                 continue
-            if defaultdata.get(pname).get("index") < len(args):   # in args
+            if pdata.defaultdata.get(pname).get("index") < len(args):   # in args
                 continue
 
             # Handle EarlyReturn
-            if isinstance(defaultdata.get(pname).get("annotation"), texe.early_return.EarlyReturn):
-                return defaultdata.get(pname).get("annotation").returns
+            if isinstance(pdata.defaultdata.get(pname).get("value"), texe.early_return.EarlyReturn):
+                return pdata.defaultdata.get(pname).get("value").returns
 
             # If the default-value is not an instance of EarlyReturn,
             #   add it to args or kwargs (depending on what fits better)
             #   to have it checked below
-            if signature.parameters.get(pname).kind == inspect.Parameter.POSITIONAL_ONLY:
-                args.append(defaultdata.get(pname).get("annotation"))
+            if pdata.function_signature.parameters.get(pname).kind == inspect.Parameter.POSITIONAL_ONLY:
+                args.append(pdata.defaultdata.get(pname).get("value"))
             else:
-                kwargs[pname] = defaultdata.get(pname).get("annotation")
+                kwargs[pname] = pdata.defaultdata.get(pname).get("value")
 
         # Args
-        for idx, annotation in argdata.items():
+        for idx, annotation in pdata.arg_annotations.items():
             if idx >= len(args):
                 break
-            arg = _enforce_annotation(args[idx], pnames[idx], annotation, fct)
+            arg = annotation.enforce(
+                fct=fct,
+                parameter=args[idx],
+                parameter_name=pdata.argname_from_index[idx],
+                args=args,
+                kwargs=kwargs,
+                pdata=pdata
+            )
             if isinstance(arg, texe.early_return.EarlyReturn):
                 return arg.returns
             args[idx] = arg
 
         # Kwargs
         for pname, parameter in kwargs.items():
-            annotation = kwargdata.get(pname)
+            annotation = pdata.kwarg_annotations.get(pname)
             if annotation is not None:
-                kwarg = _enforce_annotation(parameter, pname, annotation, fct)
+                kwarg = annotation.enforce(
+                    fct=fct,
+                    parameter=parameter,
+                    parameter_name=pname,
+                    args=args,
+                    kwargs=kwargs,
+                    pdata=pdata
+                )
                 if isinstance(kwarg, texe.early_return.EarlyReturn):
                     return kwarg.returns
                 kwargs[pname] = kwarg
 
         # Return value
         returns = fct(*args, **kwargs)
-        if signature.return_annotation != inspect.Parameter.empty \
-                and texe.util.is_package_annotation(signature.return_annotation):
-            returns = _enforce_annotation(returns, "return", signature.return_annotation, fct)
+        if pdata.function_signature.return_annotation != inspect.Parameter.empty \
+                and texe.util.is_package_annotation(pdata.function_signature.return_annotation):
+            returns = pdata.function_signature.return_annotation.enforce(
+                fct=fct,
+                parameter=returns,
+                parameter_name="return",
+                args=args,
+                kwargs=kwargs,
+                pdata=pdata
+            )
             returns = returns.returns if isinstance(returns, texe.early_return.EarlyReturn) else returns
 
         # Return
@@ -63,20 +82,23 @@ def execute_annotations(fct):
     return _run
 
 
-def _get_data(signature):
-    argdata = {}
-    kwargdata = {}
+def _get_data(fct):
+    signature = inspect.signature(fct)
+    arg_annotations = {}
+    kwarg_annotations = {}
     defaultdata = {}
-    pnames = []
+    argname_from_index = {}
+    index_from_argname = {}
 
     for i, pname in enumerate(signature.parameters.keys()):
-        pnames.append(pname)
+        argname_from_index[i] = pname
+        index_from_argname[pname] = i
 
         # Always save all defaults for CompareWith
         if signature.parameters.get(pname).default != inspect.Parameter.empty:
             defaultdata[pname] = {
                 "index": i,
-                "annotation": signature.parameters.get(pname).default
+                "value": signature.parameters.get(pname).default
             }
 
         annotation = signature.parameters.get(pname).annotation
@@ -85,29 +107,22 @@ def _get_data(signature):
         if not texe.util.is_package_annotation(annotation):
             continue
 
-        # Save argdata and kwargdata
+        # Save arg_annotations and kwarg_annotations
         if not signature.parameters.get(pname).kind == inspect.Parameter.POSITIONAL_ONLY:
-            kwargdata[pname] = annotation
+            kwarg_annotations[pname] = annotation
 
         if not signature.parameters.get(pname).kind == inspect.Parameter.KEYWORD_ONLY:
-            argdata[i] = annotation
+            arg_annotations[i] = annotation
 
-    return argdata, kwargdata, defaultdata, pnames
-
-
-def _enforce_annotation(parameter, parameter_name, annotation, fct):
-    if isinstance(annotation, texe.annotations._Assert):
-        annotation.enforce(fct, parameter, parameter_name)
-    elif isinstance(annotation, texe.annotations._Modify):
-        parameter = annotation.enforce(parameter)
-        if isinstance(parameter, texe.early_return.EarlyReturn):
-            return parameter  # EarlyReturn then handeled in enforce
-    elif isinstance(annotation, texe.annotations._Sequence):
-        parameter = annotation.enforce(fct, parameter, parameter_name)
-        if isinstance(parameter, texe.early_return.EarlyReturn):
-            return parameter  # EarlyReturn then handeled in enforce
-
-    return parameter
+    pdata = texe.parameter_data.ParameterData(
+        function_signature=signature,
+        arg_annotations=arg_annotations,
+        argname_from_index=argname_from_index,
+        index_from_argname=index_from_argname,
+        kwarg_annotations=kwarg_annotations,
+        defaultdata=defaultdata
+    )
+    return pdata
 
 
 def cleanup_annotations(fct):

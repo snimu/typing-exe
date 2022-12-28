@@ -6,7 +6,7 @@ from typing_exe.annotations import Assert, Modify, Sequence
 from typing_exe.early_return import EarlyReturn
 
 
-class TestChecks:
+class TestAssert:
     def test_basic(self):
         @execute_annotations
         def fct(a: Assert[int, lambda a: a < 5]):
@@ -95,8 +95,27 @@ class TestChecks:
         with pytest.raises(ValueError):
             fct(0, 1)
 
+    def test_comparison_with_other_parameters(self):
+        @execute_annotations
+        def fct(a, b: Assert[lambda b, a: b > a] = 1):
+            return a + b
 
-class TestHooks:
+        assert fct(1, 2) == 3
+        assert fct(0) == 1
+
+        with pytest.raises(ValueError):
+            fct(1, 1)
+
+    def test_comparison_with_other_parameters_false_names(self):
+        @execute_annotations
+        def fct(a, b: Assert[lambda b, notmyname: b > notmyname]):
+            return a + b
+
+        with pytest.raises(ValueError):
+            fct(1, 2)
+
+
+class TestModify:
     def test_basic(self):
         def hookfct(parameter):
             if parameter == 0:
@@ -120,6 +139,22 @@ class TestHooks:
 
         assert abs_fct(1) == 1
         assert abs_fct(-1) == 1
+
+    def test_comparison_with_other_parameters(self):
+        @execute_annotations
+        def fct(a, b: Modify[lambda b, a: b + a]):
+            return a, b
+
+        assert fct(1, 1) == (1, 2)
+        assert fct(a=3, b=1) == (3, 4)
+
+    def test_comparison_with_other_parameters_false_names(self):
+        @execute_annotations
+        def fct(a, b: Modify[lambda b, notmyname: b + notmyname]):
+            return a, b
+
+        with pytest.raises(ValueError):
+            fct(1, 2)
 
 
 class TestSequence:
