@@ -36,9 +36,12 @@ class _PreProcess:
 
     @staticmethod
     def execute_item(
+            context: str,
             item: callable,
             item_signature: inspect.Signature,
+            fct,
             parameter: Any,
+            parameter_name,
             args,
             kwargs,
             pdata: ParameterData
@@ -50,7 +53,7 @@ class _PreProcess:
         # Assume that first parameter to item is annotated parameter
         other_parameter_names = list(item_signature.parameters.keys())[1:]
         other_parameters = []
-        for pname in other_parameter_names:
+        for idx, pname in enumerate(other_parameter_names):
             if pname in kwargs.keys():
                 other_parameters.append(kwargs.get(pname))
             elif pname in pdata.index_from_argname.keys() and pdata.index_from_argname.get(pname) < len(args):
@@ -59,7 +62,18 @@ class _PreProcess:
                 other_parameters.append(pdata.defaultdata.get(pname).get("value"))
             else:
                 raise ValueError(
-                    f"Parameter {pname} does not exist!"   # TODO: better error
+                   f"Error with comparing parameters:\n"
+                   f"\t- Callable: \n" 
+                   f"\t\t- Name: {fct.__qualname__}\n" 
+                   f"\t\t- Module: {fct.__module__}\n" 
+                   f"\t{context}-statement:\n" 
+                   f"\t\t- Name: {item.__qualname__}\n" 
+                   f"\t\t- Module: {item.__module__}\n" 
+                   f"\t- Annotated parameter: \n" 
+                   f"\t\t- Name: {parameter_name}\n" 
+                   f"\t\t- Value: {parameter}\n"
+                   f"\t- Parameter {idx} to function in {context} has non-existent name:\n"
+                   f"\t\t- Name: {pname}"
                 )
 
         return item(parameter, *other_parameters)
@@ -77,7 +91,7 @@ class _Assert(_PreProcess):
 
         for item, item_signature in self.items.items():
             if not self.execute_item(
-                    item, item_signature, parameter, args, kwargs, pdata
+                    "Assert", item, item_signature, fct, parameter, parameter_name, args, kwargs, pdata
             ):
                 err_str = f"\nAssert failed! \n" \
                           f"\t- Callable: \n" \
@@ -103,7 +117,7 @@ class _Modify(_PreProcess):
         if self.items is not None:
             for item, signature in self.items.items():
                 parameter = self.execute_item(
-                    item, signature, parameter, args, kwargs, pdata
+                    "Modify", item, signature, fct, parameter, parameter_name, args, kwargs, pdata
                 )
                 if isinstance(parameter, EarlyReturn):
                     return parameter   # Value unpacked in @execute_annotations
