@@ -146,7 +146,7 @@ class TestModify:
             return a, b
 
         assert fct(1, 1) == (1, 2)
-        assert fct(3, 1) == (3, 4)
+        assert fct(a=3, b=1) == (3, 4)
 
     def test_comparison_with_other_parameters_false_names(self):
         @execute_annotations
