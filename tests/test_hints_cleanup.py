@@ -63,3 +63,13 @@ def test_with_strongtyping():
 
     with pytest.raises(TypeMisMatch):
         fct(1, 1, 1, 1, 1, 1, 1)
+
+
+@pytest.mark.xfail
+def test_no_cleanup():
+    @match_typing
+    @execute_annotations
+    def fct(a: Assert[int, lambda a: a != 0]):
+        return a
+
+    fct(1)   # Raises AttributeError: '_Assert' object has no attribute '_subs_tree'
