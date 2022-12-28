@@ -34,8 +34,35 @@ class _PreProcess:
         return None, None  # in case of complete nonsense
 
     @staticmethod
-    def execute_item(item: callable, signature: inspect.Signature, parameter: Any) -> Any:
-        return item(parameter)
+    def execute_item(
+            item: callable,
+            signature: inspect.Signature,
+            parameter: Any,
+            defaultdata,
+            args,
+            kwargs,
+            index_at_argname
+    ) -> Any:
+        if len(signature.parameters) == 1:
+            return item(parameter)
+
+        # More than one parameter to Assert- or Modify-item -> compare with other parameters
+        other_parameter_names = list(signature.parameters.keys())[1:]
+        other_parameters = []
+        for pname in other_parameter_names:
+            if pname in kwargs.keys():
+                other_parameters.append(kwargs.get(pname))
+            elif pname in index_at_argname.keys() and index_at_argname.get(pname) < len(args):
+                other_parameters.append(args[index_at_argname.get(pname)])
+            elif pname in defaultdata.keys():
+                other_parameters.append(defaultdata.get(pname).get("value"))
+            else:
+                raise ValueError(
+                    f"Parameter {pname} does not exist!"   # TODO: better error
+                )
+
+        return item(parameter, *other_parameters)
+
 
 
 class _Assert(_PreProcess):
@@ -43,12 +70,14 @@ class _Assert(_PreProcess):
         self.typehint, self.items = self.parse_getitem(items)
         return self
 
-    def enforce(self, fct, parameter, parameter_name):
+    def enforce(self, fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname):
         if self.items is None or parameter is None:
-            return
+            return parameter
 
         for item, signature in self.items.items():
-            if not self.execute_item(item, signature, parameter):
+            if not self.execute_item(
+                    item, signature, parameter, defaultdata, args, kwargs, index_at_argname
+            ):
                 err_str = f"\nCheck failed! \n" \
                           f"\t- Callable: \n" \
                           f"\t\t- Name: {fct.__qualname__}\n" \
@@ -61,16 +90,20 @@ class _Assert(_PreProcess):
                           f"\t\t- Value: {parameter}\n"
                 raise ValueError(err_str)
 
+        return parameter
+
 
 class _Modify(_PreProcess):
     def __getitem__(self, items):
         self.typehint, self.items = self.parse_getitem(items)
         return self
 
-    def enforce(self, parameter):
+    def enforce(self, fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname):
         if self.items is not None:
             for item, signature in self.items.items():
-                parameter = self.execute_item(item, signature, parameter)
+                parameter = self.execute_item(
+                    item, signature, parameter, defaultdata, args, kwargs, index_at_argname
+                )
                 if isinstance(parameter, EarlyReturn):
                     return parameter   # Value unpacked in @execute_annotations
 
@@ -82,14 +115,11 @@ class _Sequence:
         self.typehint, self.items = self.parse(items)
         return self
 
-    def enforce(self, fct, parameter, parameter_name):
-        for hint in self.items:
-            if isinstance(hint, _Assert):
-                hint.enforce(fct, parameter, parameter_name)
-            elif isinstance(hint, _Modify):
-                parameter = hint.enforce(parameter)
-                if isinstance(parameter, EarlyReturn):
-                    return parameter   # Value unpacked in @pc.hints.enforce
+    def enforce(self, fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname):
+        for item in self.items:
+            parameter = item.enforce(fct, parameter, parameter_name, defaultdata, args, kwargs, index_at_argname)
+            if isinstance(parameter, EarlyReturn):
+                return parameter   # Value unpacked in @execute_annotations
 
         return parameter
 
