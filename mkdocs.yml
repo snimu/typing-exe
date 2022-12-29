@@ -12,7 +12,7 @@ nav:
             - Sequence: 'Sequence.md'
         - decorators:
             - execute_annotations: 'execute_annotations.md'
-            - cleanup_annotations: 'cleanup_annotations'
+            - cleanup_annotations: 'cleanup_annotations.md'
         - early_return:
             - EarlyReturn: 'EarlyReturn.md'
         - parameter_data:
