@@ -1,6 +1,12 @@
+# Modify
+
 Modify your parameters before or your return values after execution of your function-body.
     
-# Usage
+## Simple example
+
+Below is a quick example meant to show the How (though maybe not the Why) of using `Modify`.
+
+### The example
     
 ```python
 from typing_exe.annotations import Modify
@@ -11,13 +17,28 @@ from typing_exe.decorators import execute_annotations, cleanup_annotations
 def foo(
            a: Modify[lambda a: 3 + 2*a + 4*a**2 + a**3], 
            b: Modify[float, lambda b: abs(b)]
-) -> Modify[lambda r, a, b: r if a + b < 10_000 else r/100]:
+) -> Modify[lambda r, a, b: r if a + b > 10_000 else r * 100]:
      return a - b
-```   
+```
 
-The example is completely meaningless and only serves to demonstrate the how-to, not the why, of using `Modify`.
+### Explanation
+
+What happens when this function is called? For example, consider calling `foo(2.0, -1.0)`.
+
+1. Before the function body is called, `a` and `b` are modified
+    - `a` is given the value 31 according to the equation in its `Modify`-annotation
+    - `b` is given the value 1.0
+2. The function body is executed
+3. The return-value is modified. Since `a + b < 10_000` is `True`, the actual return value of `foo(2.0, -1.0)` 
+is `30 * 100 == 3_000`
+
+The modifications are only executed if [@execute_annotations](https://snimu.github.io/typing-exe/execute_annotations/)
+is present.
+
+Due to the presence of [@cleanup_annotations](https://snimu.github.io/typing-exe/cleanup_annotations/), 
+`foo.__annotations__` will be `{'b': <class 'int'>}`, disregarding the executable annotations.
         
-# Description
+## Description
         
 As the two typehints in the example above show, the first entry can either be a typehint, 
 or a modification. All other entries are modifications (an arbitrary number of them).
@@ -73,5 +94,61 @@ def foo(a, b: Modify[lambda b, a: b + a]):
         
 Of course, the modification-functions don't have to be lambdas. 
 
-    
+## Larger example
+
+```python
+import PIL
+import torch 
+import torchvision as tv
+from typing_exe.annotations import Modify
+from typing_exe.decorators import execute_annotations
+
+
+train_mean = [0.59685254, 0.59685254, 0.59685254]
+train_std = [0.16043035, 0.16043035, 0.16043035]
+
+
+transform_to_tensor = tv.transforms.Compose([
+    tv.transforms.ToPILImage(), 
+    tv.transforms.ToTensor()
+])
+
+normalize = tv.transforms.Normalize(mean=train_mean, std=train_std)
+
+transform_flip = tv.transforms.Compose([
+    tv.transforms.RandomHorizontalFlip(),
+    tv.transforms.RandomVerticalFlip()
+])
+
+transform_colors = tv.transforms.Compose([
+    tv.transforms.RandomInvert(),
+    tv.transforms.RandomEqualize()
+])
+
+
+# Model1 and Model2 are both used with the same DataLoader the returns PIL.Images
+class Model1(torch.nn.Module):
+    @execute_annotations
+    def forward(self, x: Modify[PIL.Image, transform_to_tensor, normalize]):
+        ...
+   
+   
+class Model2(torch.nn.Module):
+    @execute_annotations
+    def forward(self, x: Modify[PIL.Image, transform_to_tensor, normalize, transform_flip]):
+        ...
+
+
+# Model3 and Model4 use a dataloader that already returns torch.tensors
+class Model3(torch.nn.Module):
+    @execute_annotations
+    def forward(self, x: Modify[torch.tensor, normalize]):
+        ...
+
+
+class Model4(torch.nn.Module):
+    @execute_annotations
+    def forward(self, x: Modify[torch.tensor, normalize, transform_colors, transform_flip]):
+        ...
+```
     

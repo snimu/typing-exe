@@ -1,6 +1,8 @@
+# Assert
+
 Add simple boolean checks on your parameters or return-values.
     
-# Usage
+## Usage
     
 ```python
 from typing_exe.annotations import Assert
@@ -15,7 +17,7 @@ def foo(
      return a / b
 ```   
         
-# Description
+## Description
         
 As the two typehints in the example above show, the first entry can either be a typehint, 
 or an assertion. All other entries are assertions (an arbitrary number of them).
