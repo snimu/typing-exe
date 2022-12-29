@@ -14,4 +14,5 @@ nav:
             - EarlyReturn: 'early_return.md'
         - parameter_data:
             - ParameterData: 'parameter_data.md'
-theme: readthedocs
+theme:
+    name: readthedocs
