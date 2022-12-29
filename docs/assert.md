@@ -21,13 +21,14 @@ As the two typehints in the example above show, the first entry can either be a 
 or an assertion. All other entries are assertions (an arbitrary number of them).
     
 The typehint will be ignored by Assert. Its purpose is twofold: Firstly, it helps readability.
-Secondly, when @execute_annotations is paired with @cleanup_annotations, only that typehint will
-be left in the function's annotations, so that the function can be used properly by other 
-packages such as strongtyping.
+Secondly, when [@execute_annotations](https://snimu.github.io/typing-exe/execute_annotations/) 
+is paired with [@cleanup_annotations](https://snimu.github.io/typing-exe/cleanup_annotations/), 
+only that typehint will be left in the function's annotations, so that the function can be used 
+properly by other packages such as [strongtyping](https://github.com/FelixTheC/strongtyping).
     
 The assertions are not in the form of `assert`-statements but in the form of functions that 
 take the parameter and return a boolean value. If that boolean value is `False`, a `ValueError` 
- will be raised (this only works if your function, foo in the example above, is decorated with 
+will be raised (this only works if your function, foo in the example above, is decorated with 
 @execute_annotations). 
     
 It is also possible to make comparisons with other parameters by simply giving your assertion-function

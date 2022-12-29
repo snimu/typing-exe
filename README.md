@@ -4,6 +4,7 @@ Executable typehints for Python: make assertions about and/or modify parameters 
 
 ![Tests](https://github.com/snimu/typing-exe/actions/workflows/tests.yml/badge.svg)
 ![Coverage](coverage.svg)
+![License](https://img.shields.io/github/license/snimu/typing-exe)
 
 **Documentation**
 
