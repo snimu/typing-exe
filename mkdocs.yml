@@ -1,18 +1,20 @@
 site_name: typeing-exe
+site_url: https://github.com/snimu/typing-exe/tree/development
+repo_name: 'snimu/typing-exe'
 
 nav:
-    - Home: index.md
-    - Quickstart: quickstart.md
+    - Home: 'index.md'
+    - Quickstart: 'quickstart.md'
     - typing-exe:
-        - annotations:
-            - Assert: 'typing-exe/annotations/Assert.md'
-            - Modify: 'typing-exe/annotations/Modify.md'
-            - Sequence: 'typing-exe/annotations/Sequence.md'
-        - decorators:
-            - execute_annotations: 'typing-exe/decorators/execute_annotations.md'
-            - cleanup_annotations: 'typing-exe/decorators/cleanup_annotations'
-        - early_return: 
-            - EarlyReturn: 'typing-exe/early_return/EarlyReturn.md'
+        - 'annotations':
+            - 'Assert': 'typing-exe/annotations/Assert.md'
+            - 'Modify': 'typing-exe/annotations/Modify.md'
+            - 'Sequence': 'typing-exe/annotations/Sequence.md'
+        - 'decorators':
+            - 'execute_annotations': 'typing-exe/decorators/execute_annotations.md'
+            - 'cleanup_annotations': 'typing-exe/decorators/cleanup_annotations'
+        - 'early_return':
+            - 'EarlyReturn': 'typing-exe/early_return/EarlyReturn.md'
         - parameter_data:
             - ParameterData: 'typing-exe/parameter_data/ParameterData.md'
 theme: readthedocs
