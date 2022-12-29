@@ -6,15 +6,15 @@ nav:
     - Home: 'index.md'
     - Quickstart: 'quickstart.md'
     - typing-exe:
-        - 'annotations':
-            - 'Assert': 'typing-exe/annotations/Assert.md'
-            - 'Modify': 'typing-exe/annotations/Modify.md'
-            - 'Sequence': 'typing-exe/annotations/Sequence.md'
-        - 'decorators':
-            - 'execute_annotations': 'typing-exe/decorators/execute_annotations.md'
-            - 'cleanup_annotations': 'typing-exe/decorators/cleanup_annotations'
-        - 'early_return':
-            - 'EarlyReturn': 'typing-exe/early_return/EarlyReturn.md'
+        - annotations:
+            - Assert: 'Assert.md'
+            - Modify: 'Modify.md'
+            - Sequence: 'Sequence.md'
+        - decorators:
+            - execute_annotations: 'execute_annotations.md'
+            - cleanup_annotations: 'cleanup_annotations'
+        - early_return:
+            - EarlyReturn: 'EarlyReturn.md'
         - parameter_data:
-            - ParameterData: 'typing-exe/parameter_data/ParameterData.md'
+            - ParameterData: 'ParameterData.md'
 theme: readthedocs
