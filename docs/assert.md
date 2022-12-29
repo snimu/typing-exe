@@ -2,7 +2,11 @@
 
 Add simple boolean checks on your parameters or return-values.
     
-## Usage
+## Simple example
+
+Below is the simple example of a constrained division-function.
+
+### The example
     
 ```python
 from typing_exe.annotations import Assert
@@ -10,12 +14,22 @@ from typing_exe.decorators import execute_annotations, cleanup_annotations
 
 @cleanup_annotations
 @execute_annotations
-def foo(
+def divide(
            a: Assert[lambda a: a >= 0], 
            b: Assert[float, lambda b: b != 0]
 ) -> Assert[lambda r, a, b: r < a if b > 1 else r >= a]:
      return a / b
 ```   
+
+### Explanation
+
+What happens when `divide` is called? 
+
+1. The first `Assert` is checked. If `a` is smaller than 0, a `ValueError` is raised
+2. The second `Assert` is checked. If `b` is equal to 0, a `ValueError` is raised
+3. The function-body is executed and the result of `a / b` calculated
+4. Its result is checked for plausibility by the third `Assert`
+5. The result is returned
         
 ## Description
         
@@ -37,7 +51,7 @@ It is also possible to make comparisons with other parameters by simply giving y
 more than one parameter, where the first parameter is assumed to be the one that is annotated, 
 while the others are the other parameters. It is important that those parameters are called the 
 same in both the assertion-function (the lambda in the return-annotation in the example) and 
-the annotated function (foo in the example above). The name of the parameter itself in the 
+the annotated function (`divide` in the example above). The name of the parameter itself in the 
 assertion-function is irrelevant but should, for readability, usually be the same as the parameter
 that is annotated by this assertion-function.
     
@@ -73,5 +87,9 @@ def foo(a, b: Assert[lambda b, a: b > a]):
         
 Of course, the assertion-functions don't have to be lambdas. 
 
-    
+## Larger example
+
+```python
+...
+```
     

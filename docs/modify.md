@@ -58,7 +58,7 @@ It is also possible to make comparisons with other parameters by simply giving y
 more than one parameter, where the first parameter is assumed to be the one that is annotated, 
 while the others are the other parameters. It is important that those parameters are called the 
 same in both the modification-function (the lambda in the return-annotation in the example) and 
-the annotated function (foo in the example above). The name of the parameter itself in the 
+the annotated function (`foo` in the example above). The name of the parameter itself in the 
 modification-function is irrelevant but should, for readability, usually be the same as the parameter
 that is annotated by this modification-function.
     
