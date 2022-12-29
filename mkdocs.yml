@@ -1,6 +1,4 @@
-site_name: typeing-exe
-site_url: https://github.com/snimu/typing-exe/tree/development
-repo_name: 'snimu/typing-exe'
+site_name: typing-exe
 
 nav:
     - Home: 'index.md'
