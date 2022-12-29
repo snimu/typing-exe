@@ -5,14 +5,14 @@ nav:
     - Quickstart: 'quickstart.md'
     - typing-exe:
         - annotations:
-            - Assert: 'Assert.md'
-            - Modify: 'Modify.md'
-            - Sequence: 'Sequence.md'
+            - Assert: 'assert.md'
+            - Modify: 'modify.md'
+            - Sequence: 'sequence.md'
         - decorators:
             - execute_annotations: 'execute_annotations.md'
             - cleanup_annotations: 'cleanup_annotations.md'
         - early_return:
-            - EarlyReturn: 'EarlyReturn.md'
+            - EarlyReturn: 'early_return.md'
         - parameter_data:
-            - ParameterData: 'ParameterData.md'
+            - ParameterData: 'parameter_data.md'
 theme: readthedocs
