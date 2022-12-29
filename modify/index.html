@@ -55,6 +55,8 @@
                 <li class="toctree-l2"><a class="reference internal" href="../assert/">Assert</a>
                 </li>
                 <li class="toctree-l2 current"><a class="reference internal current" href="./">Modify</a>
+    <ul class="current">
+    </ul>
                 </li>
                 <li class="toctree-l2"><a class="reference internal" href="../sequence/">Sequence</a>
                 </li>
@@ -106,7 +108,61 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                
+                <p>Modify your parameters before or your return values after execution of your function-body.</p>
+<h1 id="usage">Usage</h1>
+<pre><code class="language-python">from typing_exe.annotations import Modify
+from typing_exe.decorators import execute_annotations, cleanup_annotations
+
+@cleanup_annotations
+@execute_annotations
+def foo(
+           a: Modify[lambda a: 3 + 2*a + 4*a**2 + a**3], 
+           b: Modify[float, lambda b: abs(b)]
+) -&gt; Modify[lambda r, a, b: r if a + b &lt; 10_000 else r/100]:
+     return a - b
+</code></pre>
+<p>The example is completely meaningless and only serves to demonstrate the how-to, not the why, of using <code>Modify</code>.</p>
+<h1 id="description">Description</h1>
+<p>As the two typehints in the example above show, the first entry can either be a typehint, 
+or a modification. All other entries are modifications (an arbitrary number of them).</p>
+<p>The typehint will be ignored by Modify. Its purpose is twofold: Firstly, it helps readability.
+Secondly, when <a href="https://snimu.github.io/typing-exe/execute_annotations/">@execute_annotations</a>
+is paired with <a href="https://snimu.github.io/typing-exe/cleanup_annotations/">@cleanup_annotations</a>, 
+only that typehint will be left in the function's annotations, so that the function can be used 
+properly by other packages such as <a href="https://github.com/FelixTheC/strongtyping">strongtyping</a>.</p>
+<p>The modifications are functions that 
+take the parameter, modify it, and then return it 
+(this only works if your function, foo in the example above, is decorated with 
+@execute_annotations). </p>
+<p>It is also possible to make comparisons with other parameters by simply giving your modification-function
+more than one parameter, where the first parameter is assumed to be the one that is annotated, 
+while the others are the other parameters. It is important that those parameters are called the 
+same in both the modification-function (the lambda in the return-annotation in the example) and 
+the annotated function (foo in the example above). The name of the parameter itself in the 
+modification-function is irrelevant but should, for readability, usually be the same as the parameter
+that is annotated by this modification-function.</p>
+<p>For example, the following works:</p>
+<pre><code class="language-python">from typing_exe.annotations import Modify
+
+
+def foo(a, b: Modify[lambda whatever, a: whatever + a]):
+    ...
+</code></pre>
+<p>But this doesn't:</p>
+<pre><code class="language-python">from typing_exe.annotations import Modify
+
+
+def foo(a, b: Modify[lambda b, whatever: b + whatever]):
+    ...
+</code></pre>
+<p>Good form would be the following:</p>
+<pre><code class="language-python">from typing_exe.annotations import Modify
+
+
+def foo(a, b: Modify[lambda b, a: b + a]):
+     ...
+</code></pre>
+<p>Of course, the modification-functions don't have to be lambdas. </p>
               
             </div>
           </div><footer>

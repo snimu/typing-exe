@@ -125,12 +125,13 @@ def foo(
 <p>As the two typehints in the example above show, the first entry can either be a typehint, 
 or an assertion. All other entries are assertions (an arbitrary number of them).</p>
 <p>The typehint will be ignored by Assert. Its purpose is twofold: Firstly, it helps readability.
-Secondly, when @execute_annotations is paired with @cleanup_annotations, only that typehint will
-be left in the function's annotations, so that the function can be used properly by other 
-packages such as strongtyping.</p>
+Secondly, when <a href="https://snimu.github.io/typing-exe/execute_annotations/">@execute_annotations</a> 
+is paired with <a href="https://snimu.github.io/typing-exe/cleanup_annotations/">@cleanup_annotations</a>, 
+only that typehint will be left in the function's annotations, so that the function can be used 
+properly by other packages such as <a href="https://github.com/FelixTheC/strongtyping">strongtyping</a>.</p>
 <p>The assertions are not in the form of <code>assert</code>-statements but in the form of functions that 
 take the parameter and return a boolean value. If that boolean value is <code>False</code>, a <code>ValueError</code> 
- will be raised (this only works if your function, foo in the example above, is decorated with 
+will be raised (this only works if your function, foo in the example above, is decorated with 
 @execute_annotations). </p>
 <p>It is also possible to make comparisons with other parameters by simply giving your assertion-function
 more than one parameter, where the first parameter is assumed to be the one that is annotated, 
