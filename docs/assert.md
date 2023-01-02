@@ -98,11 +98,5 @@ def foo(a, b: Assert[lambda b, a: b > a]):
      ...
 ```
         
-Of course, the assertion-functions don't have to be lambdas. 
-
-## Larger example
-
-```python
-...
-```
+Of course, the assertion-functions don't have to be lambdas.
     
