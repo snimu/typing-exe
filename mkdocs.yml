@@ -3,13 +3,13 @@ nav:
     - Home: 'index.md'
     - Quickstart: 'quickstart.md'
     - typing-exe:
+        - decorators:
+            - execute_annotations: 'execute_annotations.md'
+            - cleanup_annotations: 'cleanup_annotations.md'
         - annotations:
             - Assert: 'assert.md'
             - Modify: 'modify.md'
             - Sequence: 'sequence.md'
-        - decorators:
-            - execute_annotations: 'execute_annotations.md'
-            - cleanup_annotations: 'cleanup_annotations.md'
         - early_return:
             - EarlyReturn: 'early_return.md'
         - parameter_data:
