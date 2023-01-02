@@ -42,6 +42,19 @@ Due to the presence of [@cleanup_annotations](https://snimu.github.io/typing-exe
         
 As the two typehints in the example above show, the first entry can either be a typehint, 
 or a modification. All other entries are modifications (an arbitrary number of them).
+
+The acceptable forms are:
+
+```python
+from typing_exe.annotations import Modify
+
+
+# 1. typehint and modifications
+Modify[<typehint>, <modification1>, <modification2>, ...]
+
+# 2. only modifications
+Modify[<modification1>, <modification2>, ...]
+```
     
 The typehint will be ignored by Modify. Its purpose is twofold: Firstly, it helps readability.
 Secondly, when [@execute_annotations](https://snimu.github.io/typing-exe/execute_annotations/)
@@ -51,8 +64,8 @@ properly by other packages such as [strongtyping](https://github.com/FelixTheC/s
     
 The modifications are functions that 
 take the parameter, modify it, and then return it 
-(this only works if your function, foo in the example above, is decorated with 
-@execute_annotations). 
+(this only works if your function, `foo` in the example above, is decorated with 
+`@execute_annotations`). 
     
 It is also possible to make comparisons with other parameters by simply giving your modification-function
 more than one parameter, where the first parameter is assumed to be the one that is annotated, 
@@ -139,7 +152,7 @@ class Model2(torch.nn.Module):
         ...
 
 
-# Model3 and Model4 use a dataloader that already returns torch.tensors
+# Model3 and Model4 use a DataLoader that already returns torch.tensors
 class Model3(torch.nn.Module):
     @execute_annotations
     def forward(self, x: Modify[torch.tensor, normalize]):

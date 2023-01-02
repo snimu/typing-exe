@@ -35,6 +35,19 @@ What happens when `divide` is called?
         
 As the two typehints in the example above show, the first entry can either be a typehint, 
 or an assertion. All other entries are assertions (an arbitrary number of them).
+
+The acceptable forms are:
+
+```python
+from typing_exe.annotations import Assert
+
+
+# 1. typehint and assertions
+Assert[<typehint>, <assertion1>, <assertion2>, ...]
+
+# 2. only assertions
+Assert[<assertion1>, <assertion2>, ...]
+```
     
 The typehint will be ignored by Assert. Its purpose is twofold: Firstly, it helps readability.
 Secondly, when [@execute_annotations](https://snimu.github.io/typing-exe/execute_annotations/) 
@@ -44,8 +57,8 @@ properly by other packages such as [strongtyping](https://github.com/FelixTheC/s
     
 The assertions are not in the form of `assert`-statements but in the form of functions that 
 take the parameter and return a boolean value. If that boolean value is `False`, a `ValueError` 
-will be raised (this only works if your function, foo in the example above, is decorated with 
-@execute_annotations). 
+will be raised (this only works if your function, `divide` in the example above, is decorated with 
+`@execute_annotations`). 
     
 It is also possible to make comparisons with other parameters by simply giving your assertion-function
 more than one parameter, where the first parameter is assumed to be the one that is annotated, 
