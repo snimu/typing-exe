@@ -25,7 +25,7 @@ def load_img(a: str):
         # a was already sharpened and was saved as a pdf-file 
         #   -> sharpen_img should simply return the loaded data
         pdf = load_fct(a)
-        return EarlyReturn(a)
+        return EarlyReturn(pdf)
     
     # Load the image and give it and the filename to sharpen_img
     image = load_fct(a, fileformat=fileformat)
