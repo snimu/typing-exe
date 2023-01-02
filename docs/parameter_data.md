@@ -1,7 +1,7 @@
 # ParameterData
 
 A `dataclass` that holds information about a function that is annotated by 
-[@execute_annotations](http://127.0.0.1:8000/execute_annotations/).
+[@execute_annotations](https://snimu.github.io/typing-exe/execute_annotations/).
 
 It is recommended that users don't use this class directly. However, a short description of its 
 members is provided below anyways.
