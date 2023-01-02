@@ -50,6 +50,14 @@
               </ul>
               <p class="caption"><span class="caption-text">typing-exe</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">decorators</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../execute_annotations/">execute_annotations</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../cleanup_annotations/">cleanup_annotations</a>
+                </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="#">annotations</a>
     <ul>
                 <li class="toctree-l2"><a class="reference internal" href="../assert/">Assert</a>
@@ -60,17 +68,21 @@
                 </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="#">decorators</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../execute_annotations/">execute_annotations</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../cleanup_annotations/">cleanup_annotations</a>
-                </li>
-    </ul>
-                  </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">early_return</a>
     <ul class="current">
                 <li class="toctree-l2 current"><a class="reference internal current" href="./">EarlyReturn</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#the-example">The example</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#explanation">Explanation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#earlyreturn_1">EarlyReturn</a>
+    </li>
+    </ul>
                 </li>
     </ul>
                   </li>
@@ -106,12 +118,60 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                
+                <h1 id="earlyreturn">EarlyReturn</h1>
+<p>Communicate to <a href="https://snimu.github.io/typing-exe/modify">Modify</a> 
+and <a href="https://snimu.github.io/typing-exe/sequence">Sequence</a> to stop function-execution and return the value given to 
+<code>EarlyReturn</code>.</p>
+<p>Does <strong>not</strong> work for <a href="https://snimu.github.io/typing-exe/assert">Assert</a>.</p>
+<h2 id="example">Example</h2>
+<h3 id="the-example">The example</h3>
+<pre><code class="language-python">from some_package import load_fct, save_fct
+from typing_exe.early_return import EarlyReturn
+from typing_exe.annotations import Modify
+from typing_exe.decorators import execute_annotations
+
+
+def load_img(a: str):
+    filename = a.split(&quot;.&quot;)[:-1]
+    fileformat = a.split(&quot;.&quot;)[-1]
+
+    if fileformat == &quot;pdf&quot;:
+        # a was already sharpened and was saved as a pdf-file 
+        #   -&gt; sharpen_img should simply return the loaded data
+        pdf = load_fct(a)
+        return EarlyReturn(pdf)
+
+    # Load the image and give it and the filename to sharpen_img
+    image = load_fct(a, fileformat=fileformat)
+    return filename, image
+
+
+@execute_annotations
+def sharpen_img(a: Modify[str, load_img]):
+    filename, image = *a
+    # Sharpen the image here 
+    image = ... 
+    # Save the result
+    save_fct(filename + &quot;.pdf&quot;, image)
+    # Return sharpened image
+    return image
+</code></pre>
+<h3 id="explanation">Explanation</h3>
+<p>The function <code>sharpen_img</code> is used to load an image from a file given by name. It loads the image
+in <code>load_img</code>&mdash;executed in <code>Modify</code>&mdash;sharpens it, saves it as a PDF-file, and then returns
+the sharpened image. </p>
+<p>If the file given to it is already in PDF-format, that means that it has already been
+sharpened and so <code>load_img</code> loads it and returns an <code>EarlyReturn</code> of the loaded, sharpened image. The 
+function-body of <code>sharpen_img</code> will not be executed; instead, the sharpened image will be returned immediately.</p>
+<h2 id="earlyreturn_1"><code>EarlyReturn</code></h2>
+<ul>
+<li><code>returns</code> The value that should be returned early</li>
+</ul>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../cleanup_annotations/" class="btn btn-neutral float-left" title="cleanup_annotations"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../sequence/" class="btn btn-neutral float-left" title="Sequence"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../parameter_data/" class="btn btn-neutral float-right" title="ParameterData">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
@@ -135,7 +195,7 @@
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../cleanup_annotations/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../sequence/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../parameter_data/" style="color: #fcfcfc">Next &raquo;</a></span>

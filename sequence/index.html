@@ -50,6 +50,14 @@
               </ul>
               <p class="caption"><span class="caption-text">typing-exe</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="#">decorators</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../execute_annotations/">execute_annotations</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../cleanup_annotations/">cleanup_annotations</a>
+                </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">annotations</a>
     <ul class="current">
                 <li class="toctree-l2"><a class="reference internal" href="../assert/">Assert</a>
@@ -57,14 +65,18 @@
                 <li class="toctree-l2"><a class="reference internal" href="../modify/">Modify</a>
                 </li>
                 <li class="toctree-l2 current"><a class="reference internal current" href="./">Sequence</a>
-                </li>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#basic-example">Basic example</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#the-example">The example</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#explanation">Explanation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#description">Description</a>
+    </li>
     </ul>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="#">decorators</a>
-    <ul>
-                <li class="toctree-l2"><a class="reference internal" href="../execute_annotations/">execute_annotations</a>
-                </li>
-                <li class="toctree-l2"><a class="reference internal" href="../cleanup_annotations/">cleanup_annotations</a>
                 </li>
     </ul>
                   </li>
@@ -106,13 +118,56 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                
+                <h1 id="sequence">Sequence</h1>
+<p>String together <a href="https://snimu.github.io/typing-exe/assert/">Assert</a> 
+and <a href="https://snimu.github.io/typing-exe/modify/">Modify</a>
+annotations.</p>
+<h2 id="basic-example">Basic example</h2>
+<h3 id="the-example">The example</h3>
+<pre><code class="language-python">from typing_exe.annotations import Sequence, Assert, Modify
+from typing_exe.decorators import execute_annotations, cleanup_annotations
+
+
+@cleanup_annotations
+@execute_annotations
+def foo(
+        a: Sequence[
+            int,
+            Assert[lambda a: type(a) is int, lambda a: a != 0],
+            Modify[lambda a: abs(a)],
+            Assert[lambda a: a &gt; 5]
+        ]
+):
+    ...
+</code></pre>
+<h3 id="explanation">Explanation</h3>
+<p>When <code>foo</code> gets executed, the following will happen:</p>
+<ol>
+<li>The first <code>Assert</code> will check <code>a</code>'s type, then check that it is not zero</li>
+<li>The <code>Modify</code> will then return the absolute value of <code>a</code></li>
+<li>The second <code>Assert</code> will check that <code>a</code> is now greater than five</li>
+<li>The function-body will be executed</li>
+</ol>
+<h2 id="description">Description</h2>
+<p>The first entry to the <code>Sequence.__getitem__</code>-method can either be a typehint or an 
+<a href="https://snimu.github.io/typing-exe/assert/">Assert</a> or <a href="https://snimu.github.io/typing-exe/modify/">Modify</a>.
+All other entries have to be either an <code>Assert</code> or a <code>Modify</code>.</p>
+<p>Here are some legal calls to <code>Sequence</code>:</p>
+<pre><code class="language-python">from typing_exe.annotations import Sequence, Assert, Modify
+
+
+Sequence[int, Assert[...], Modify[...]]
+Sequence[Assert[...], Modify[...]]
+Sequence[Modify[...], Modify[...], Modify[...]]
+Sequence[str, Modify[...]]
+Sequence[Assert[...]]   # not very useful
+</code></pre>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
         <a href="../modify/" class="btn btn-neutral float-left" title="Modify"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../execute_annotations/" class="btn btn-neutral float-right" title="execute_annotations">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../early_return/" class="btn btn-neutral float-right" title="EarlyReturn">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -138,7 +193,7 @@
       <span><a href="../modify/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../execute_annotations/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../early_return/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
