@@ -54,6 +54,26 @@ sharpened and so `load_img` loads it and returns an `EarlyReturn` of the loaded,
 function-body of `sharpen_img` will not be executed; instead, the sharpened image will be returned immediately.
 
 
+### EarlyReturn for default parameters
+
+[EarlyReturn](https://snimu.github.io/typing-exe/early_return/) can even be used as a default value!
+This way, if a parameter to a function is unfilled, a default can be returned immediately. 
+
+```python
+from typing import Union
+from typing_exe.early_return import EarlyReturn
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a: Union[str, EarlyReturn] = EarlyReturn("well that was quick")):
+    ...
+```
+
+If you are using type-checkers, [EarlyReturn](https://snimu.github.io/typing-exe/early_return/) of course
+has to be allowed as a type to the parameter, as seen in the example above.
+
+
 ## `EarlyReturn`
 
 - `returns` The value that should be returned early
