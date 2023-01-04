@@ -1,7 +1,11 @@
 ![Tests](https://github.com/snimu/typing-exe/actions/workflows/tests.yml/badge.svg)
 ![License](https://img.shields.io/github/license/snimu/typing-exe)
 
+# typing-exe
+
 Executable typehints for Python: make assertions about and/or modify parameters & return values.
+
+**GitHub page:** [snimu/typing-exe](https://github.com/snimu/typing-exe)
 
 ## Example
 
