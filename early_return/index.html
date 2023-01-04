@@ -78,6 +78,8 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#explanation">Explanation</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#earlyreturn-for-default-parameters">EarlyReturn for default parameters</a>
+    </li>
         </ul>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#earlyreturn_1">EarlyReturn</a>
@@ -163,6 +165,20 @@ the sharpened image. </p>
 <p>If the file given to it is already in PDF-format, that means that it has already been
 sharpened and so <code>load_img</code> loads it and returns an <code>EarlyReturn</code> of the loaded, sharpened image. The 
 function-body of <code>sharpen_img</code> will not be executed; instead, the sharpened image will be returned immediately.</p>
+<h3 id="earlyreturn-for-default-parameters">EarlyReturn for default parameters</h3>
+<p><a href="https://snimu.github.io/typing-exe/early_return/">EarlyReturn</a> can even be used as a default value!
+This way, if a parameter to a function is unfilled, a default can be returned immediately. </p>
+<pre><code class="language-python">from typing import Union
+from typing_exe.early_return import EarlyReturn
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a: Union[str, EarlyReturn] = EarlyReturn(&quot;well that was quick&quot;)):
+    ...
+</code></pre>
+<p>If you are using type-checkers, <a href="https://snimu.github.io/typing-exe/early_return/">EarlyReturn</a> of course
+has to be allowed as a type to the parameter, as seen in the example above.</p>
 <h2 id="earlyreturn_1"><code>EarlyReturn</code></h2>
 <ul>
 <li><code>returns</code> The value that should be returned early</li>

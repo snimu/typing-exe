@@ -47,6 +47,28 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="./">Quickstart</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#lets-begin">Let's begin!</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#assert-basic">Assert: basic</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#assert-multiple-assertions">Assert: multiple assertions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#assert-between-parameters">Assert: between parameters</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#assert-returns">Assert: returns</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cleanup_annotations">cleanup_annotations</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#modify">Modify</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#earlyreturn">EarlyReturn</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#earlyreturn-default-value">EarlyReturn: default value</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sequence-chaining-assert-and-modify-statements">Sequence: chaining Assert and Modify statements</a>
+    </li>
+        </ul>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -107,6 +129,208 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="quickstart">Quickstart</h1>
+<p>Welcome to <a href="https://snimu.github.io/typing-exe/">typing-exe</a>! </p>
+<p><strong>Installation</strong></p>
+<pre><code class="language-bash">pip install typing-exe
+</code></pre>
+<p><strong>GitHub page</strong> </p>
+<p><a href="https://github.com/snimu/typing-exe">snimu/typing-exe</a></p>
+<h2 id="lets-begin">Let's begin!</h2>
+<p>Let's just show the features provided by this package, one after the other.</p>
+<h5 id="assert-basic">Assert: basic</h5>
+<p>First off: <a href="https://snimu.github.io/typing-exe/assert/">Assert</a>.
+Don't forget <a href="https://snimu.github.io/typing-exe/execute_annotations/">@execute_annotations</a>
+or the annotations won't do anything!</p>
+<pre><code class="language-python">from typing_exe.annotations import Assert
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a: Assert[lambda a: a &gt;= 0]):
+    ...
+</code></pre>
+<p>What happens when <code>foo</code> is called? Before the function-body is executed, the parameter <code>a</code> is checked with the
+given function (in this case a lambda, though it can be a regular function as long as it takes the parameter and
+returns a <code>bool</code>). If that function returns <code>True</code>, then the function-body is executed, if it returns <code>False</code>, 
+a <code>ValueError</code> is raised that might look something like this:</p>
+<pre><code>&lt;traceback&gt;
+ValueError: 
+Assert failed! 
+    - Callable: 
+        - Name: foo
+        - Module: __main__
+    Assertion:
+        - Name: &lt;lambda&gt;
+        - Module: __main__
+    - Parameter: 
+        - Name: a
+        - Value: -1
+</code></pre>
+<h5 id="assert-multiple-assertions">Assert: multiple assertions</h5>
+<p>It is easy to run an arbitrary number of assertions in succession:</p>
+<pre><code class="language-python">from typing_exe.annotations import Assert
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a: Assert[lambda a: a &gt;= 0, lambda a: a%3 == 0]):
+    ...
+</code></pre>
+<p>The assertions will be checked one after the other. If one fails, a <code>ValueError</code> will be raised.</p>
+<h5 id="assert-between-parameters">Assert: between parameters</h5>
+<p>It is also easy to compare one parameter to others.</p>
+<pre><code class="language-python">from typing_exe.annotations import Assert
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a, b: Assert[lambda b, a: b &gt; a]):
+    ...
+</code></pre>
+<p>It is important that all names correspond to the name of the parameter they refer to. The exception is the 
+annotated parameter, though it is bad form to give it some random name.</p>
+<pre><code class="language-python">from typing_exe.annotations import Assert
+from typing_exe.decorators import execute_annotations
+
+
+# Works, good form
+@execute_annotations
+def foo(a, b: Assert[lambda b, a: b &gt; a]):
+    ...
+
+
+# Works, bad form
+@execute_annotations
+def hoo(a, b: Assert[lambda bar, a: bar &gt; a]):
+    ...
+
+
+# Doesn't work
+@execute_annotations
+def hoo(a, b: Assert[lambda b, nope: b &gt; nope]):
+    ...
+</code></pre>
+<h5 id="assert-returns">Assert: returns</h5>
+<p>Of course, all of these features are available for return values (which is the reason why 
+the first parameter to an assertion does not have to be called the same as the parameter it 
+annotates: it would not work for return values):</p>
+<pre><code class="language-python">from typing_exe.annotations import Assert
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a) -&gt; Assert[lambda r, a: r &gt; a]:
+    ...
+</code></pre>
+<p>This <a href="https://snimu.github.io/typing-exe/assert/">Assert</a> 
+will be executed after the function-body, and only then will the result be returned.</p>
+<h5 id="cleanup_annotations">cleanup_annotations</h5>
+<p>These type-annotations aren't the actual types that the parameter takes; they are just a way to 
+move constraints on a callable to a place where they are immediately visible to programmers. 
+But what if you want to use actual typehints? Don't worry, <code>typing-exe</code> has you covered.</p>
+<pre><code class="language-python">from typing_exe.decorators import execute_annotations, cleanup_annotations
+from typing_exe.annotations import Assert
+
+
+@cleanup_annotations
+@execute_annotations
+def foo(a: Assert[int, lambda a: a != 0]):
+    ...
+</code></pre>
+<p>Now, the <a href="https://snimu.github.io/typing-exe/assert/">Assert</a>
+will be executed, but <code>foo.__annotations__</code> will be <code>{'a': &lt;class 'int'&gt;}</code>, 
+making it useful to other packages such as <a href="https://github.com/FelixTheC/strongtyping">strongtyping</a>.</p>
+<h5 id="modify">Modify</h5>
+<p><a href="https://snimu.github.io/typing-exe/modify/">Modify</a> works exactly as 
+<a href="https://snimu.github.io/typing-exe/assert/">Assert</a> does, except that the modification functions
+are expected to return the parameter&mdash;changed however you want&mdash;instead of a <code>bool</code>. 
+Instead of checking the returned <code>bool</code> and raising a <code>ValueError</code> if it is <code>False</code>, 
+<a href="https://snimu.github.io/typing-exe/modify/">Modify</a> will change the actual parameter.</p>
+<p>Of course, just like with <a href="https://snimu.github.io/typing-exe/assert/">Assert</a>, 
+the modification-functions don't have to be lambdas, 
+the examples below just do that for brevity.</p>
+<pre><code class="language-python">from typing_exe.annotations import Modify
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a: Modify[lambda a: a + 1]):
+    ...
+</code></pre>
+<p>Before the function-body of <code>foo</code> is executed, <code>a</code> is changed by adding 1 to it. The function-body
+then works with that modified <code>a</code>.</p>
+<p>Of course, all the features of <a href="https://snimu.github.io/typing-exe/assert/">Assert</a>
+are also available for <a href="https://snimu.github.io/typing-exe/modify/">Modify</a>. 
+This means that multiple modifications can be done in a row in one 
+<a href="https://snimu.github.io/typing-exe/modify/">Modify</a>-statement, 
+<a href="https://snimu.github.io/typing-exe/modify/">Modify</a> works in return-annotations,
+other parameters can be taken into account, 
+and <a href="https://snimu.github.io/typing-exe/cleanup_annotations/">@cleanup_annotations</a>
+will treat <a href="https://snimu.github.io/typing-exe/modify/">Modify</a> just like 
+<a href="https://snimu.github.io/typing-exe/assert/">Assert</a>.</p>
+<p>There is one additional tool that can be used with <a href="https://snimu.github.io/typing-exe/modify/">Modify</a>,
+however: <a href="https://snimu.github.io/typing-exe/early_return/">EarlyReturn</a>.</p>
+<h5 id="earlyreturn">EarlyReturn</h5>
+<p>Sometimes, when some condition is satisfied, you just want to return early without having to execute the rest 
+of the function. <code>typing-exe</code> has you covered!</p>
+<pre><code class="language-python">from typing_exe.early_return import EarlyReturn
+from typing_exe.annotations import Modify
+from typing_exe.decorators import execute_annotations
+
+
+def modification(a):
+    if a == 0:
+        return EarlyReturn(1e100)   # something / 0 is very big... Having a dedicated inf would be better
+    return 1/a
+
+@execute_annotations
+def foo(a: Modify[modification]):
+    ...
+</code></pre>
+<p>Now, <code>foo(0)</code> will immediately return <code>1e100</code> without even executing the function-body (or any of the other, 
+later annotations). Annotations before the <a href="https://snimu.github.io/typing-exe/early_return/">EarlyReturn</a> 
+will be executed normally.</p>
+<h5 id="earlyreturn-default-value">EarlyReturn: default value</h5>
+<p><a href="https://snimu.github.io/typing-exe/early_return/">EarlyReturn</a> can even be used as a default value!
+This way, if a parameter to a function is unfilled, a default can be returned immediately. </p>
+<pre><code class="language-python">from typing import Union
+from typing_exe.early_return import EarlyReturn
+from typing_exe.decorators import execute_annotations
+
+
+@execute_annotations
+def foo(a: Union[str, EarlyReturn] = EarlyReturn(&quot;well that was quick&quot;)):
+    ...
+</code></pre>
+<p>If you are using type-checkers, <a href="https://snimu.github.io/typing-exe/early_return/">EarlyReturn</a> of course
+has to be allowed as a type to the parameter, as seen in the example above.</p>
+<h5 id="sequence-chaining-assert-and-modify-statements">Sequence: chaining <code>Assert</code> and <code>Modify</code> statements</h5>
+<p>Do you want to assert something about a parameter, then modify it, then check the result of that modification,
+then modify again, and so on, and so on? <code>typing-exe</code> has you covered!</p>
+<pre><code class="language-python">from typing_exe.annotations import (
+    Assert,
+    Modify,
+    Sequence
+)
+from typing_exe.decorators import (
+    execute_annotations,
+    cleanup_annotations
+)
+
+
+@cleanup_annotations
+@execute_annotations
+def foo(
+        a: Sequence[
+            float,
+            Assert[lambda a: a != 0],
+            Modify[lambda a, b: b / a],
+            Assert[lambda a: 0 &lt; a &lt; 10_000]
+        ],
+        b: float
+):
+    ...
+</code></pre>
               
             </div>
           </div><footer>
