@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "typing-exe"
-version = "0.0.1"
+version = "1.0.0"
 authors = [{name="Sebastian Müller"}, {email="sebastian.nicolas.mueller@gmail.com"}]
 description = "Executable typehints for Python: make assertions about and/or modify parameters & return values"
-readme = "README.md"
+readme = "README-PyPI.md"
 requires-python = ">=3.8"
 keywords = ["parameters", "return-value", "typing", "assert", "modify", "decorator", "typehint"]
 classifiers = [
