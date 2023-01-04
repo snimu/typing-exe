@@ -1,4 +1,5 @@
 ![PyPI Version](https://img.shields.io/pypi/v/parameter_checks)
+![Wheel](https://img.shields.io/pypi/wheel/typing_exe)
 ![Tests](https://github.com/snimu/typing-exe/actions/workflows/tests.yml/badge.svg)
 ![License](https://img.shields.io/github/license/snimu/typing-exe)
 
